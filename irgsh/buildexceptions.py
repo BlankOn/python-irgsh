@@ -7,7 +7,7 @@ class BuildGeneralError(Exception):
         self._msg = msg
 
     def __str__(self):
-        print self._msg
+        return self._msg
 
 class BuildDownloadError(BuildGeneralError):
     def __init__(self, msg):

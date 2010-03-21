@@ -1,5 +1,6 @@
 #! /usr/bin/python
 
+from buildexceptions import BuildDownloadError
 from sourcepackage import SourcePackage
 from dvcs import DvcsIface
 import shutil
@@ -33,7 +34,9 @@ class BuildJob(object):
     #privates
     def generate_dsc(self):
         source_dir = tempfile.mkdtemp("-irgsh-builder-source")
-        self._diff.export(source_dir)
+        if self._diff.export(source_dir) == False:
+            raise BuildDownloadError("Unable to export source code")
+
         orig_file = None
         if orig_file != None:
             (orig_file, h) = urllib.urllretrieve(self._orig)

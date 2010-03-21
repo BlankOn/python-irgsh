@@ -30,7 +30,7 @@ class Builder(BuilderIface):
 
         self._conf = self._path + "/" + self._distro.name + "/pbuilder.conf" 
         if os.path.exists(self._conf) == False:
-            raise BuildBuilderConfigurationError("Unable to open %s" % (conf))
+            raise BuildBuilderConfigurationError("Unable to open %s" % (self._conf))
 
     """ /reimp
     """
