@@ -26,9 +26,8 @@ class BuildJob(object):
         """
         dsc = self.generate_dsc()
         results = builder.build(dsc)
-        os.remove(dsc)
         dir = os.path.dirname(dsc)
-        print "xxxxx" + dir
+        shutil.rmtree(dir)
         return results
     
     #privates
@@ -38,8 +37,8 @@ class BuildJob(object):
             raise BuildDownloadError("Unable to export source code")
 
         orig_file = None
-        if orig_file != None:
-            (orig_file, h) = urllib.urllretrieve(self._orig)
+        if self._orig != None:
+            (orig_file, h) = urllib.urlretrieve(self._orig)
 
         s = SourcePackage(source_dir, orig_file)
         dsc = s.generate_dsc()

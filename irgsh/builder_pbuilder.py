@@ -47,7 +47,6 @@ class Builder(BuilderIface):
 
         os.chdir(current_dir)
         result = self.result()
-        shutil.rmtree(dir)
         return result
 
     @property

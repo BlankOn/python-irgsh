@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-from debian_bundle.deb822 import Packages
+from debian_bundle.deb822 import Sources
 from debian_bundle.changelog import Changelog
 import tarfile
 import os
@@ -76,13 +76,22 @@ class SourcePackage(object):
         return self._binaries
 
     def generate_dsc(self):
+        versions = str(self.version).split(":")
+        version = None
+        if len(versions) > 1:
+            # for case "1:2.29.2ubuntu2"
+            version = versions[1]
+        else:
+            version = versions[0]
+        self._package_version = self.name + "-" + version 
+ 
         dir = tempfile.mkdtemp("-irgsh-builder")
         if self._orig == None:
             self.generate_dsc_native(dir)
         else:
             self.generate_dsc_with_orig(dir)
 
-        return dir + "/" + self.name + "_" + str(self._version) + ".dsc"
+        return dir + "/" + self.name + "_" + version + ".dsc"
 
     # privates
     def generate_dsc_native(self, location):
@@ -108,8 +117,7 @@ class SourcePackage(object):
         t = tarfile.open(self._orig)
         first_data = t.next()
 
-        package_version = self.name + "-" + str(self._version)
-        if first_data.isdir() and package_version.startswith(first_data.name):
+        if first_data.isdir() and self._package_version.startswith(first_data.name):
             os.chdir(location)
             t.extractall(location)
             dirname = location + "/" + first_data.name
@@ -120,7 +128,7 @@ class SourcePackage(object):
             shutil.rmtree(dirname)
             os.chdir(current_dir)
         else:
-            raise BuildSourcePreparationError("Orig's contents mismatch with package versioning")
+            raise BuildSourcePreparationError("Orig's contents mismatch with package versioning (%s vs %s)" % (first_data.name, package_version))
 
 
     def populate_binaries(self):
@@ -128,10 +136,33 @@ class SourcePackage(object):
 
     def parse_metadata(self):
         if self._directory != None:
-            p = Packages(file(self._directory + "/debian/control")) 
-            self._maintainer = p["Maintainer"]
-            self._name = p["Source"]
-            
+            try:
+                p = Sources(file(self._directory + "/debian/control")) 
+                if p.has_key("Maintainer") and p.has_key("Source"):
+                    self._maintainer = p["Maintainer"]
+                    self._name = p["Source"]
+                else:
+                    # /debian/control has a initial whitespace, need to strip
+                    f = open(self._directory + "/debian/control")
+                    w = open(self._directory + "/debian/control.stripped", "w")
+                    start = False
+                    for line in f:
+                        if line.startswith("Source: ") == True:
+                            start = True
+                        if start == True:
+                            w.write(line)
+                    w.close()
+                    f.close()
+
+                    p = Sources(file(self._directory + "/debian/control.stripped")) 
+                    try:
+                        self._maintainer = p["Maintainer"]
+                        self._name = p["Source"]
+                    except Exception as e:
+                        raise BuildSourcePreparationError("Control file in %s has error: %s" % (self._directory + "/debian/control", e))
+            except Exception as e:
+                raise BuildSourcePreparationError("Control file in %s has error: %s" % (self._directory + "/debian/control", e))
+
             c = Changelog(file(self._directory + "/debian/changelog"))
             self._changed_by = c.author
             self._version = c.version
@@ -139,4 +170,4 @@ class SourcePackage(object):
 
 if __name__ == '__main__':
     s = SourcePackage("/tmp/gimp-2.6.7", "/tmp/gimp_2.6.7.orig.tar.bz2")
-    s.generate_dsc("/tmp/o") 
+    print s.generate_dsc() 
