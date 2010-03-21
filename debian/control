@@ -7,7 +7,7 @@ Build-Depends-Indep: python-support (>= 0.3)
 
 Package: python-irgsh
 Architecture: all
-Depends: ${python:Depends}, pbuilder, dput, blankon-builder-configurations
+Depends: ${python:Depends}, python-debian, bzr, pbuilder, dput, blankon-builder-configurations
 Description: Python modules of irgsh
  .
 
