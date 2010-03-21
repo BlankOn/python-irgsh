@@ -68,7 +68,15 @@ class BuilderIface(object):
             return None
 
         dsc = Changes(file(self._source))
-        changes_file = self.results_directory + "/" + dsc["Source"] + "_" + str(dsc["Version"]) + "_" + self._build_architecture + ".changes"
+        versions = str(dsc["Version"]).split(":")
+        version = None
+        if len(versions) > 1:
+            # for case "1:2.29.2ubuntu2"
+            version = versions[1]
+        else:
+            version = versions[0]
+ 
+        changes_file = self.results_directory + "/" + dsc["Source"] + "_" + version + "_" + self._build_architecture + ".changes"
 
         if os.path.exists(changes_file) == False:
             raise BuildBuilderFailureError("Building of %s failed" % (self._source))
