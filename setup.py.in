@@ -1,0 +1,12 @@
+#!/usr/bin/python
+
+from setuptools import setup
+
+setup(name='python-irgsh', 
+      version='__VERSION__',
+      description='Python interface to irgsh',
+      url='http://irgsh.blankonlinux.or.id',
+      packages=['irgsh'],
+      maintainer='BlankOn Developers',
+      maintainer_email='blankon-dev@googlegroups.com',
+     )

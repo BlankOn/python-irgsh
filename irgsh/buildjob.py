@@ -1,0 +1,59 @@
+#! /usr/bin/python
+
+from sourcepackage import SourcePackage
+from dvcs import DvcsIface
+import shutil
+import urllib
+import tempfile
+import os
+
+class BuildJob(object):
+
+    """ BuildJob defines a build job
+    """
+    def __init__(self, diff, orig=None):
+        """ Constructor
+        :param diff a Dvcs object
+        :param orig the orig tarball object
+        """
+        self._diff = diff
+        self._orig = orig
+
+    def build(self, builder):
+        """ Build the package
+        :param builder the Builder object
+        """
+        dsc = self.generate_dsc()
+        results = builder.build(dsc)
+        os.remove(dsc)
+        dir = os.path.dirname(dsc)
+        print "xxxxx" + dir
+        return results
+    
+    #privates
+    def generate_dsc(self):
+        source_dir = tempfile.mkdtemp("-irgsh-builder-source")
+        self._diff.export(source_dir)
+        orig_file = None
+        if orig_file != None:
+            (orig_file, h) = urllib.urllretrieve(self._orig)
+
+        s = SourcePackage(source_dir, orig_file)
+        dsc = s.generate_dsc()
+        if orig_file != None:
+            os.remove(orig_file)
+
+        return dsc
+
+from distro import Distro
+from builder_pbuilder import Builder
+from dvcs_bzr import DvcsBzr
+if __name__ == '__main__':
+    d = Builder(Distro("ombilin"))
+    #dvcs = DvcsBzr("http://dev.blankonlinux.or.id/bzr/ombilin/apt")
+    #dvcs.tag = "0.7.25.3ubuntu3+blankon2.1"
+
+    dvcs = DvcsBzr("http://dev.blankonlinux.or.id/bzr/ombilin/libcanberra")
+    dvcs.tag = "0.22-1ubuntu2+blankon2"
+    bj = BuildJob(dvcs, "http://mirror.unej.ac.id/ubuntu/pool/main/libc/libcanberra/libcanberra_0.22.orig.tar.gz")
+    print bj.build(d)
