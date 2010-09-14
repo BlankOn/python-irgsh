@@ -5,7 +5,7 @@ from dvcs import DvcsIface
 from bzrlib.branch import Branch
 import bzrlib.export
 
-class DvcsBzr(DvcsIface):
+class dvcs_bzr(DvcsIface):
     def export(self, destination):
         self._log.write("Exporting %s to %s" % (self._url, destination))
         result = False        

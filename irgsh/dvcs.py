@@ -49,4 +49,15 @@ class DvcsIface(object):
     def export(self, destination):
         return False
 
-        
+class DvcsLoader:
+    _instance = None
+
+    @property
+    def instance(self):
+        return self._instance
+
+    def __init__(self, name, url):
+        obj = __import__("irgsh.dvcs_%s" % name, None, None, ["dvcs_%s" % name])
+        dvcs = eval("obj.dvcs_%s" % name)
+
+        self._instance = dvcs(url)    
