@@ -10,10 +10,6 @@ class DvcsBzr(DvcsIface):
         self._log.write("Exporting %s to %s" % (self._url, destination))
         result = False        
 
-        if self._tag == None and self._revision == None:
-            self._log.write("TAG and REVISION are undefined") 
-            return result
-
         try:
             remote = Branch.open(self._url)
 
@@ -35,7 +31,8 @@ class DvcsBzr(DvcsIface):
             except Exception as e:
                 self._log.write("Unable to find tag %s: %s" % (self._tag, e))
                 return result
-        
+        elif self._tag == None and self._revision == None: 
+            revid = remote.last_revision()
         try:
             tree = remote.repository.revision_tree(revid)
         except Exception as e:
