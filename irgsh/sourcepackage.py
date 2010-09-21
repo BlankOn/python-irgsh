@@ -76,7 +76,7 @@ class SourcePackage(object):
         return self._binaries
 
     def generate_dsc(self):
-        versions = str(self._version).split(":")
+        versions = str(self.version).split(":")
         version = None
         if len(versions) > 1:
             # for case "1:2.29.2ubuntu2"
