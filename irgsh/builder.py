@@ -83,6 +83,19 @@ class BuilderIface(object):
 
         return changes_file
 
+class BuilderLoader:
+    _instance = None
+
+    @property
+    def instance(self):
+        return self._instance
+
+    def __init__(self, name, distro, build_dir=None, results_dir=None):
+        obj = __import__("irgsh.builder_%s" % name, None, None, ["builder_%s" % name])
+        builder = eval("obj.builder_%s" % name)
+
+        self._instance = builder(distro, build_dir, results_dir)    
+
 from sourcepackage import SourcePackage
 from buildlog import BuildLog
 

@@ -10,7 +10,7 @@ from distro import Distro
 from builder import BuilderIface
 from buildlog import BuildLog
 
-class Builder(BuilderIface):
+class builder_pbuilder(BuilderIface):
     """The thing which builds. Uses Pbuilder.
     """
 
