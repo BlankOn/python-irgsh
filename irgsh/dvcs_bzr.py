@@ -8,10 +8,6 @@ import os
 
 class dvcs_bzr(DvcsIface):
     def export(self, destination):
-        if os.path.isdir(destination):
-            basename = os.path.basename(self._url)
-            destination = os.path.join(destination, basename)
-
         self._log.write("Exporting %s to %s" % (self._url, destination))
         result = False        
 

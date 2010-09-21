@@ -47,10 +47,11 @@ class BuildJob(object):
 
         return dsc
 
-from distro import Distro
-from builder_pbuilder import Builder
-from dvcs_bzr import DvcsBzr
 if __name__ == '__main__':
+    
+    from distro import Distro
+    from builder_pbuilder import Builder
+    from dvcs_bzr import DvcsBzr
     d = Builder(Distro("ombilin"))
     #dvcs = DvcsBzr("http://dev.blankonlinux.or.id/bzr/ombilin/apt")
     #dvcs.tag = "0.7.25.3ubuntu3+blankon2.1"

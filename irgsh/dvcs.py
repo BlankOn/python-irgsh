@@ -47,6 +47,7 @@ class DvcsIface(object):
         return self._name
 
     def export(self, destination):
+        # Destination must be either an empty directory or non-existant directory
         return False
 
 class DvcsLoader:
