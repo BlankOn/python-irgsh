@@ -4,9 +4,14 @@ import log
 from dvcs import DvcsIface
 from bzrlib.branch import Branch
 import bzrlib.export
+import os
 
 class dvcs_bzr(DvcsIface):
     def export(self, destination):
+        if os.path.isdir(destination):
+            basename = os.path.basename(self._url)
+            destination = os.path.join(destination, basename)
+
         self._log.write("Exporting %s to %s" % (self._url, destination))
         result = False        
 
@@ -40,7 +45,7 @@ class dvcs_bzr(DvcsIface):
             return result
 
         try:
-            bzrlib.export.export(tree, destination, "dir")
+            bzrlib.export.export(tree, destination, None)
             result = True
         except Exception as e:
             self._log.write("Unable to export %s to %s: %s" % (self._url, destination, e))
