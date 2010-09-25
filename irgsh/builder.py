@@ -16,6 +16,7 @@ class BuilderIface(object):
     """
 
     _source = None
+    _components = None
 
     def __init__(self, distro, build_directory = None, results_directory = None):
         """Creates a Builder instance
@@ -82,6 +83,14 @@ class BuilderIface(object):
             raise BuildBuilderFailureError("Building of %s failed" % (self._source))
 
         return changes_file
+
+    @property
+    def components(self):
+        return self._components
+
+    @components.setter
+    def components(self, components):
+        self._components = components
 
 class BuilderLoader:
     _instance = None
