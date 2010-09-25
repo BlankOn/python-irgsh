@@ -128,7 +128,7 @@ class SourcePackage(object):
             shutil.rmtree(dirname)
             os.chdir(current_dir)
         else:
-            raise BuildSourcePreparationError("Orig's contents mismatch with package versioning (%s vs %s)" % (first_data.name, package_version))
+            raise BuildSourcePreparationError("Orig's contents mismatch with package versioning (%s vs %s)" % (first_data.name, self._package_version))
 
 
     def populate_binaries(self):

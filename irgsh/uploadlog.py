@@ -9,10 +9,18 @@ class UploadLog:
         _handle = None
         _stderr = None
         _stdout = None
+        _filename = None
+       
+        @property
+        def filename(self):
+            return self._filename
 
         def __init__(self, filename = None):
+            self.reopen(filename)
 
+        def reopen(self, filename = None):
             if filename != None:
+                self._filename = filename
                 if self._handle != None:
                     self.close()
 
@@ -29,6 +37,7 @@ class UploadLog:
                 sys.stderr = self._stderr
                 self._stdout = None
                 self._stderr = None 
+                self._handle = None
 
         def handle(self):
             if self._handle == None:
@@ -36,16 +45,20 @@ class UploadLog:
             else:
                 return self._handle
 
+        def closed(self):
+            return self._handle == None
+
         def write(self, msg):
             self.handle().write(msg + "\n")
 
     __instance = None
  
-    __instance = None
-   
     def __init__(self, filename = None):
         if UploadLog.__instance == None:
             UploadLog.__instance = UploadLog.__impl(filename)
+
+        if UploadLog.__instance.closed():
+            UploadLog.__instance.reopen(filename)
 
         self.__dict__['_UploadLog__instance'] = UploadLog.__instance
 

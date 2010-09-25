@@ -16,11 +16,14 @@ class UploaderIface:
         """ Starts the upload process
         """
         self.pre_upload()
+        retval = False
         if self.do_upload() == False:
             self.post_failed_upload()
         else:
             self.post_successful_upload()
+            retval = True
         self.post_upload()
+        return retval
 
     #protected
     def pre_upload(self):

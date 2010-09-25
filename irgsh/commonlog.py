@@ -1,6 +1,19 @@
 #! /usr/bin/python
 
 import sys
+import gzip
+
+class LogDeviceGzip(object):
+    def __init__(self, *args):
+        self.device = gzip.open(*args)
+
+    def __getattr__(self, name):
+        return getattr(self.device, name)
+
+    def write(self, s):
+        self.device.write(s)
+        sys.__stdout__.write(s)
+
 
 class LogDevice(object):
     def __init__(self, *args):
