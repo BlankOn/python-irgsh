@@ -25,9 +25,14 @@ class BuildJob(object):
         :param builder the Builder object
         """
         dsc = self.generate_dsc()
-        results = builder.build(dsc)
-        dir = os.path.dirname(dsc)
-        shutil.rmtree(dir)
+        try:
+            dir = os.path.dirname(dsc)
+            results = builder.build(dsc)
+        except:
+            raise
+        finally:
+            shutil.rmtree(dir)
+
         return results
     
     #privates
@@ -45,6 +50,7 @@ class BuildJob(object):
         if orig_file != None:
             os.remove(orig_file)
 
+        shutil.rmtree(source_dir)
         return dsc
 
 if __name__ == '__main__':
