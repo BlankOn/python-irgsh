@@ -58,7 +58,8 @@ class DvcsLoader:
         return self._instance
 
     def __init__(self, name, url):
-        obj = __import__("irgsh.dvcs_%s" % name, None, None, ["dvcs_%s" % name])
-        dvcs = eval("obj.dvcs_%s" % name)
+        mod_name = 'irgsh.dvcs_%s' % name
+        mod = __import__(mod_name)
+        cls = getattr(obj, 'dvcs_%s' % name)
+        self._instance = cls(url)
 
-        self._instance = dvcs(url)    
