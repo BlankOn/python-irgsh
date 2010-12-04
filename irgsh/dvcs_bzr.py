@@ -20,19 +20,19 @@ class dvcs_bzr(DvcsIface):
 
         revid = ''
         tree = None
-        if self._revision != None:
+        if self._revision is not None:
             try:
                 revid = remote.get_rev_id(self._revision)
             except Exception as e:
                 self._log.write("Unable to find revision %s: %s" % (self._revision, e))
                 return result
-        elif self._tag != None:
+        elif self._tag is not None:
             try:
                 revid = remote.tags.lookup_tag(self._tag)
             except Exception as e:
                 self._log.write("Unable to find tag %s: %s" % (self._tag, e))
                 return result
-        elif self._tag == None and self._revision == None: 
+        elif self._tag == None and self._revision is None: 
             revid = remote.last_revision()
         try:
             tree = remote.repository.revision_tree(revid)

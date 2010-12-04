@@ -34,8 +34,8 @@ class CommonLog:
 
         def __init__(self, filename = None):
 
-            if filename != None:
-                if self._handle != None:
+            if filename is not None:
+                if self._handle is not None:
                     self.close()
 
                 self._handle = LogDevice(filename, "w")
@@ -45,7 +45,7 @@ class CommonLog:
                 sys.stderr = self._handle
 
         def close(self):
-            if self._handle != None:
+            if self._handle is not None:
                 self._handle.close()
                 sys.stdout = self._stdout
                 sys.stderr = self._stderr
@@ -53,7 +53,7 @@ class CommonLog:
                 self._stderr = None 
 
         def handle(self):
-            if self._handle == None:
+            if self._handle is None:
                 return sys.stdout
             else:
                 return self._handle
@@ -61,7 +61,7 @@ class CommonLog:
     __instance = None
    
     def __init__(self, filename = None):
-        if CommonLog.__instance == None:
+        if CommonLog.__instance is None:
             CommonLog.__instance = CommonLog.__impl(filename)
 
         self.__dict__['_CommonLog__instance'] = CommonLog.__instance

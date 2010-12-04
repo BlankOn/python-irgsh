@@ -42,12 +42,12 @@ class BuildJob(object):
             raise BuildDownloadError("Unable to export source code")
 
         orig_file = None
-        if self._orig != None:
+        if self._orig is not None:
             (orig_file, h) = urllib.urlretrieve(self._orig)
 
         s = SourcePackage(source_dir, orig_file)
         dsc = s.generate_dsc()
-        if orig_file != None:
+        if orig_file is not None:
             os.remove(orig_file)
 
         shutil.rmtree(source_dir)

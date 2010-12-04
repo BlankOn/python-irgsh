@@ -76,7 +76,7 @@ class builder_pbuilder(BuilderIface):
 
     @property
     def build_directory(self):
-        if self._build_directory == None:
+        if self._build_directory is None:
             build_directory = None
 
             file = open(self._conf)
@@ -86,7 +86,7 @@ class builder_pbuilder(BuilderIface):
                     break
             file.close()
 
-            if results_directory == None:
+            if results_directory is None:
                 raise BuilderBuildConfigurationError("Build directory is not defined in %s configuration file" % (self._conf))
 
             return build_directory
@@ -95,10 +95,10 @@ class builder_pbuilder(BuilderIface):
 
     @property
     def results_directory(self):
-        if self._results_directory == None:
+        if self._results_directory is None:
 
             results_directory = self._conf_results_directory
-            if results_directory == None:
+            if results_directory is None:
                 raise BuilderBuildConfigurationError("Results directory is not defined in %s configuration file" % (self._conf))
             return results_directory
         else:
@@ -107,13 +107,13 @@ class builder_pbuilder(BuilderIface):
     #privates
     def generate_arguments(self):
         args = ""
-        if self._build_directory != None:
+        if self._build_directory is not None:
             args += " --buildplace " + self._build_directory
 
-        if self._results_directory != None:
+        if self._results_directory is not None:
             args += " --buildresult " + self._results_directory
 
-        if self._components != None:
+        if self._components is not None:
             if os.path.isdir(self._hookdir):
                 script = "#!/bin/sh\n"
                 script += "echo \"deb %s %s %s\" >> /etc/apt/sources.list\n" % (self._mirror, self._distro.name, self._components)

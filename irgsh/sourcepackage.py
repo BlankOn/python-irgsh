@@ -28,42 +28,42 @@ class SourcePackage(object):
         self._log = BuildLog()
 
     def last_changelog(self):
-        if self._last_changelog == None:
+        if self._last_changelog is None:
             self.parse_metadata()
 
         return self._last_changelog
 
     @property
     def name(self):
-        if self._name == None:
+        if self._name is None:
             self.parse_metadata()
 
         return self._name
 
     @property
     def maintainer(self):
-        if self._maintainer == None:
+        if self._maintainer is None:
             self.parse_metadata()
 
         return self._maintainer
 
     @property
     def changed_by(self):
-        if self._changed_by == None:
+        if self._changed_by is None:
             self.parse_metadata()
 
         return self._changed_by
 
     @property
     def version(self):
-        if self._version == None:
+        if self._version is None:
             self.parse_metadata()
 
         return self._version
 
     @property
     def distribution(self):
-        if self._distribution == None:
+        if self._distribution is None:
             self.parse_metadata()
 
         return self._distribution
@@ -86,7 +86,7 @@ class SourcePackage(object):
         self._package_version = self.name + "-" + version 
  
         dir = tempfile.mkdtemp("-irgsh-builder")
-        if self._orig == None:
+        if self._orig is None:
             self.generate_dsc_native(dir)
         else:
             self.generate_dsc_with_orig(dir)
@@ -135,7 +135,7 @@ class SourcePackage(object):
         pass
 
     def parse_metadata(self):
-        if self._directory != None:
+        if self._directory is not None:
             try:
                 p = Sources(file(self._directory + "/debian/control")) 
                 if p.has_key("Maintainer") and p.has_key("Source"):

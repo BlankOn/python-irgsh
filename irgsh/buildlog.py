@@ -18,9 +18,9 @@ class BuildLog:
             self.reopen(filename)
 
         def reopen(self, filename = None):
-            if filename != None:
+            if filename is not None:
                 self._filename = filename
-                if self._handle != None:
+                if self._handle is not None:
                     self.close()
 
                 if filename.endswith(".gz"):
@@ -33,7 +33,7 @@ class BuildLog:
                 sys.stderr = self._handle
 
         def close(self):
-            if self._handle != None:
+            if self._handle is not None:
                 self._handle.close()
                 sys.stdout = self._stdout
                 sys.stderr = self._stderr
@@ -42,7 +42,7 @@ class BuildLog:
                 self._handle = None
 
         def handle(self):
-            if self._handle == None:
+            if self._handle is None:
                 return sys.stdout
             else:
                 return self._handle
@@ -52,7 +52,7 @@ class BuildLog:
 
     __instance = None
     def __init__(self, filename = None):
-        if BuildLog.__instance == None:
+        if BuildLog.__instance is None:
             BuildLog.__instance = BuildLog.__impl(filename)
 
         if BuildLog.__instance.closed():

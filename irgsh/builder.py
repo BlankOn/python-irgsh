@@ -65,7 +65,7 @@ class BuilderIface(object):
     def result(self):
         """ Returns the .changes file name as a result of the build
         """
-        if self._source == None:
+        if self._source is None:
             return None
 
         dsc = Changes(file(self._source))
