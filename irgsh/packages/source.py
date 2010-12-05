@@ -2,7 +2,9 @@ import logging
 import tempfile
 from cStringIO import StringIO
 import os
+import tarfile
 import re
+import shutil
 from subprocess import Popen, PIPE
 
 from debian_bundle.deb822 import Sources
@@ -31,34 +33,68 @@ class SourcePackage(object):
 
         self.log = logging.getLogger('irgsh.packages')
 
-    def generate_dsc(self):
+    def generate_dsc(self, stdout=PIPE, stderr=PIPE):
         version = version.split(':')[-1]
         package_version = '%s-%s' % (self.name, version)
 
         tmpdir = tempfile.mkdtemp('-irgsh-builder')
         if self.orig is None:
-            self.generate_dsc_native(package_version, tmpdir)
+            self._generate_dsc_native(package_version, tmpdir, stdout, stderr)
         else:
-            self.generate_dsc_with_orig(package_version, tmpdir)
+            self._generate_dsc_with_orig(package_version, tmpdir,
+                                         stdout, stderr)
 
         return os.path.join(tmpdir, '%s_%s.dsc' % (self.name, version))
 
-    def generate_dsc_native(self, package_version, tmpdir):
+    def _generate_dsc_native(self, package_version, tmpdir,
+                             stdout=PIPE, stderr=PIPE):
         """Generate dsc for native package."""
+        current_dir = os.getcwd()
+        try:
+            os.chdir(tmpdir)
+
+            cmd = 'dpkg-source -b %s' % self.directory
+            p = Popen(cmd.split(), stdout=stdout, stderr=stderr)
+            p.communicate()
+
+        finally:
+            os.chdir(current_dir)
+
+    def _generate_dsc_with_orig(self, package_version, tmpdir,
+                                stdout=PIPE, stderr=PIPE):
+        """Generate dsc for non-native package."""
+
+        # Check orig file
+        tar = tarfile.open(self.orig)
+        first = tar.next()
+
+        if not first.isdir() or \
+           not package_versions.startswith(first.name):
+            raise ValueError, "Orig file's contents mismatch " \
+                              "with package version (%s vs %s)" % \
+                              (first.name, package_version)
 
         current_dir = os.getcwd()
-        os.chdir(tmpdir)
+        try:
+            os.chdir(tmpdir)
 
-        cmd = 'dpkg-source -b %s' % self.directory
-        p = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
-        p.communicate()
+            # Extract to .orig directory
+            tar.extractall(tmpdir)
+            dirname = os.path.join(tmpdir, first.name)
+            os.rename(dirname, '%s.orig' % dirname)
 
-        os.chdir(current_dir)
+            # Build the source package
+            try:
+                shutil.copytree(self.directory, dirname)
 
-    def generate_dsc_with_orig(self, package_version, tmpdir):
-        """Generate dsc for non-native package."""
-        pass
+                cmd = 'dpkg-source -b -sr %s' % dirname
+                p = Popen(cmd.split(), stdout=stdout, stderr=stderr)
+                p.communicate()
 
+            finally:
+                shutil.rmtree(dirname)
+        finally:
+            os.chdir(current_dir)
 
     def parse_metadata(self):
         #
