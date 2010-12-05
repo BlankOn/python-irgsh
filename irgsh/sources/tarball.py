@@ -10,13 +10,6 @@ class Tarball(BaseSource):
     def __init__(self, location, **opts):
         super(Tarball, self).__init__(location, **opts)
 
-        # Check location
-        parse = urlparse(location)
-        filename = os.path.basename(parse.path)
-        if filename == '':
-            raise InvalidSourceLocationError(self.location)
-        self.filename = filename
-
     def export(self, target):
         try:
             tmp = tempfile.mkstemp()
@@ -26,6 +19,12 @@ class Tarball(BaseSource):
 
     def export_source(self, source, tmp, target):
         self.log.debug('Exporting %s to %s' % (self.location, target)
+
+        # Check location
+        parse = urlparse(location)
+        filename = os.path.basename(parse.path)
+        if filename == '':
+            raise InvalidSourceLocationError(self.location)
 
         # Download file
         try:
