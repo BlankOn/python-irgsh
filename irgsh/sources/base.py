@@ -10,6 +10,9 @@ class InvalidSourceLocationError(Exception):
             desc = '%s (%s)' % (desc, msg)
         super(InvalidSourceLocationError, self).__init__(desc)
 
+class InvalidSourceNameError(Exception):
+    pass
+
 class BaseSource(object):
     """Package source definition.
 
@@ -24,4 +27,19 @@ class BaseSource(object):
 
     def export(self, target):
         raise NotImplementedError()
+
+sources = {}
+
+def register_source_class(name, cls):
+    sources[name] = cls
+
+def get_source_class(name):
+    return sources.get(name, None)
+
+def build_source(name, location, **opts):
+    cls = get_source_class(name)
+    if cls is None:
+        raise InvalidSourceNameError(name)
+
+    return cls(location, **opts)
 

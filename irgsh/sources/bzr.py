@@ -1,7 +1,8 @@
 from bzrlib.branch import Branch
 import bzrlib.export
 
-from . import BaseSource, InvalidSourceLocationError
+from . import BaseSource, InvalidSourceLocationError, \
+              register_source_class
 
 class BZR(BaseSource):
     def __init__(self, location, **opts):
@@ -51,4 +52,6 @@ class BZR(BaseSource):
         except Exception, e:
             desc = 'Unable to export %s to %s: %s' % (self.location, target, e)
             raise InvalidSourceLocationError(self.location, desc)
+
+register_source_class('bzr', BZR)
 

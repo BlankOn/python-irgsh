@@ -4,7 +4,8 @@ import tarfile
 import urllib2
 import os
 
-from . import BaseSource, InvalidSourceLocationError
+from . import BaseSource, InvalidSourceLocationError, \
+              register_source_class
 
 class Tarball(BaseSource):
     def __init__(self, location, **opts):
@@ -45,4 +46,6 @@ class Tarball(BaseSource):
             self.log.error('Unable to extract tarball %s: %s' % \
                            (self.location, e))
             raise
+
+register_source_class('tarball', Tarball)
 
