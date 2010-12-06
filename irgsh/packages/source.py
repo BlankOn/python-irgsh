@@ -33,25 +33,24 @@ class SourcePackage(object):
 
         self.log = logging.getLogger('irgsh.packages')
 
-    def generate_dsc(self, stdout=PIPE, stderr=PIPE):
+    def generate_dsc(self, target, stdout=PIPE, stderr=PIPE):
         version = version.split(':')[-1]
         package_version = '%s-%s' % (self.name, version)
 
-        tmpdir = tempfile.mkdtemp('-irgsh-builder')
         if self.orig is None:
-            self._generate_dsc_native(package_version, tmpdir, stdout, stderr)
+            self._generate_dsc_native(package_version, target, stdout, stderr)
         else:
-            self._generate_dsc_with_orig(package_version, tmpdir,
+            self._generate_dsc_with_orig(package_version, target,
                                          stdout, stderr)
 
-        return os.path.join(tmpdir, '%s_%s.dsc' % (self.name, version))
+        return '%s_%s.dsc' % (self.name, version)
 
-    def _generate_dsc_native(self, package_version, tmpdir,
+    def _generate_dsc_native(self, package_version, target,
                              stdout=PIPE, stderr=PIPE):
         """Generate dsc for native package."""
         current_dir = os.getcwd()
         try:
-            os.chdir(tmpdir)
+            os.chdir(target)
 
             cmd = 'dpkg-source -b %s' % self.directory
             p = Popen(cmd.split(), stdout=stdout, stderr=stderr)
@@ -60,7 +59,7 @@ class SourcePackage(object):
         finally:
             os.chdir(current_dir)
 
-    def _generate_dsc_with_orig(self, package_version, tmpdir,
+    def _generate_dsc_with_orig(self, package_version, target,
                                 stdout=PIPE, stderr=PIPE):
         """Generate dsc for non-native package."""
 
@@ -76,11 +75,11 @@ class SourcePackage(object):
 
         current_dir = os.getcwd()
         try:
-            os.chdir(tmpdir)
+            os.chdir(target)
 
             # Extract to .orig directory
-            tar.extractall(tmpdir)
-            dirname = os.path.join(tmpdir, first.name)
+            tar.extractall(target)
+            dirname = os.path.join(target, first.name)
             os.rename(dirname, '%s.orig' % dirname)
 
             # Build the source package
