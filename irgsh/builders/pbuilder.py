@@ -4,8 +4,19 @@ from subprocess import Popen, PIPE
 from debian_bundle.deb822 import Changes
 
 from . import BaseBuilder, BuildFailedError
+from ..utils import read_rcfile
 
 class Pbuilder(BaseBuilder):
+    def __init__(self, distro, **opts):
+        super(Pbuilder, self).__init__(distro, **opts)
+
+        self.path = opts['path']
+        self.config_file = os.path.join(self.path, self.distro.name,
+                                        'pbuilder.conf')
+        self.config = read_rcfile(self.config_file)
+        self.build_directory = opts.get('build_directory', None)
+        self.results_directory = opts.get('results_directory', None)
+
     def build(self, dsc, stdout=PIPE, stderr=PIPE):
         try:
             current_dir = os.getcwd()
