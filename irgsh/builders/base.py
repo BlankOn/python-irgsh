@@ -1,5 +1,3 @@
-from debian_bundle.deb822 import Changes 
-
 from ..utils import get_architecture
 
 class BuildFailedError(Exception):
@@ -18,14 +16,4 @@ class BaseBuilder(object):
         if self._architecture is None:
             self._architecture = get_architecture()
         return self._architecture
-
-    def get_changes_file(self, dsc):
-        changes = Changes(open(dsc))
-        version = changes['Version'].split(':')[-1]
-
-        changes_name = '%s_%s_%s.changes' % (changes['Source'], version,
-                                             self.architecture)
-        fname = os.path.join(self.result_directory, changes_name)
-
-        return fname
 

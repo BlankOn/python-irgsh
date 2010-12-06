@@ -1,6 +1,8 @@
 import os
 from subprocess import Popen, PIPE
 
+from debian_bundle.deb822 import Changes
+
 from . import BaseBuilder, BuildFailedError
 
 class Pbuilder(BaseBuilder):
@@ -27,14 +29,24 @@ class Pbuilder(BaseBuilder):
         finally:
             os.chdir(current_dir)
 
+    def get_changes_file(self, dsc):
+        changes = Changes(open(dsc))
+        version = changes['Version'].split(':')[-1]
+
+        changes_name = '%s_%s_%s.changes' % (changes['Source'], version,
+                                             self.architecture)
+        fname = os.path.join(self.result_directory, changes_name)
+
+        return fname
+
     def generate_arguments(self):
         args = []
 
         if self.build_directory is not None:
             args.append('--buildplace %s' % self.build_directory)
-        
-        if self.result_directory is not None:
-            args.append('--buildresult %s' % self.result_directory)
+
+        if self.results_directory is not None:
+            args.append('--buildresult %s' % self.results_directory)
 
         # FIXME
         self.components = None
