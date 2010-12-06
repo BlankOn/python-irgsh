@@ -1,5 +1,7 @@
 from debian_bundle.deb822 import Changes 
 
+from ..utils import get_architecture
+
 class BuildFailedError(Exception):
     def __init__(self, source):
         self.source = source
@@ -7,11 +9,15 @@ class BuildFailedError(Exception):
         return 'Build failed: %s' % self.source
 
 class BaseBuilder(object):
-    def __init__(self, distro, build_directory, result_directory, architecture):
+    def __init__(self, distro, **opts):
         self.distro = distro
-        self.build_directory = directory
-        self.result_directory = result_directory
-        self.architecture = architecture
+        self._architecture = None
+
+    @property
+    def architecture(self):
+        if self._architecture is None:
+            self._architecture = get_architecture()
+        return self._architecture
 
     def get_changes_file(self, dsc):
         changes = Changes(open(dsc))
