@@ -1,8 +1,8 @@
 class Distribution(object):
-    def __init__(self, name, mirror, dists, components=['main'], extra=[]):
+    def __init__(self, name, mirror, dist, components=['main'], extra=[]):
         self.name = name
         self.mirror = mirror
-        self.dists = dists
+        self.dist = dist
         self.components = components
         self.extra = extra
 
