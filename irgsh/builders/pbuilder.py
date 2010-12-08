@@ -13,7 +13,7 @@ class Pbuilder(BaseBuilder):
         super(Pbuilder, self).__init__(distribution, **opts)
 
         self.pbuilder_path = pbuilder_path
-        self.path = os.path.join(path, self.distribution.name)
+        self.path = os.path.join(pbuilder_path, self.distribution.name)
         self.configfile = os.path.join(self.path, 'pbuilder.conf')
 
     def init(self):
@@ -32,7 +32,7 @@ class Pbuilder(BaseBuilder):
             f = open(fname, 'w')
             f.write(json.dumps({'name': self.distribution.name,
                                 'mirror': self.distribution.mirror,
-                                'dists': self.distribution.dists,
+                                'dist': self.distribution.dist,
                                 'components': self.distribution.components,
                                 'extra': self.distribution.extra}))
             f.close()
@@ -59,7 +59,7 @@ class Pbuilder(BaseBuilder):
                       'COMPONENTS': components,
                       'OTHERMIRROR': othermirror}
 
-            f = open(fname, 'w')
+            f = open(self.configfile, 'w')
             f.write('\n'.join(['%s=%s' % (key, escape(value))
                                for key, value in config.items()]))
             f.close()
@@ -105,7 +105,7 @@ class Pbuilder(BaseBuilder):
         p.communicate()
 
         if p.returncode != 0:
-            raise BuildFailedError()
+            raise BuildFailedError(dsc)
         else:
             return self.get_changes_file(dsc)
 
