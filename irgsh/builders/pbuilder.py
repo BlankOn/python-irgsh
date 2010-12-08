@@ -41,15 +41,26 @@ class Pbuilder(BaseBuilder):
         if not os.path.exists(self.configfile):
             def join(*name):
                 return os.path.join(self.path, *name)
+            def escape(value):
+                if ' ' in value:
+                    return '"%s"' % value
+                return value
+
+            components = ' '.join(self.distribution.components)
+            othermirror = ' | '.join(self.distribution.extra)
 
             config = {'BASETGZ': join('base.tgz'),
                       'APTCACHE': join('aptcache'),
                       'BUILDRESULT': join('result'),
                       'BUILDPLACE': join('build'),
-                      'HOOKDIR': join('hook')
+                      'HOOKDIR': join('hook'),
+                      'MIRRORSITE': self.distribution.mirror,
+                      'DISTRIBUTION': self.distribution.dist,
+                      'COMPONENTS': components,
+                      'OTHERMIRROR': othermirror}
 
             f = open(fname, 'w')
-            f.write('\n'.join(['%s=%s' % (key, value)
+            f.write('\n'.join(['%s=%s' % (key, escape(value))
                                for key, value in config.items()]))
             f.close()
 
