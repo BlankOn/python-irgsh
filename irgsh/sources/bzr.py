@@ -12,11 +12,11 @@ class BZR(BaseSource):
         self.revision = opts.get('revision', None)
 
     def export(self, target):
-        self.log.debug('Exporting %s to %s' % (self.location, target)
+        self.log.debug('Exporting %s to %s' % (self.location, target))
 
         # Check branch
         try:
-            remote = Branch.open(self._url)
+            remote = Branch.open(self.location)
         except Exception, e:
             raise InvalidSourceLocationError(self.location, e)
 
@@ -24,7 +24,7 @@ class BZR(BaseSource):
         revid = None
         if self.revision is not None:
             try:
-                revid = remote.get_rev_id(self.revision):
+                revid = remote.get_rev_id(self.revision)
             except Exception, e:
                 desc = "Unknown revision '%s'" % self.revision
                 raise InvalidSourceLocationError(self.location, desc)
