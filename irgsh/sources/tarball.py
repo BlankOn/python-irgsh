@@ -13,19 +13,19 @@ class Tarball(BaseSource):
 
     def export(self, target):
         try:
-            tmp = tempfile.mkstemp()
+            fd, tmp = tempfile.mkstemp()
             self.export_source(self.location, tmp, target)
         finally:
             os.unlink(tmp)
 
     def export_source(self, source, tmp, target):
-        self.log.debug('Exporting %s to %s' % (self.location, target)
+        self.log.debug('Exporting %s to %s' % (self.location, target))
 
         # Check location
-        parse = urlparse(location)
+        parse = urlparse(source)
         filename = os.path.basename(parse.path)
         if filename == '':
-            raise InvalidSourceLocationError(self.location)
+            raise InvalidSourceLocationError(source)
 
         # Download file
         try:
@@ -34,7 +34,7 @@ class Tarball(BaseSource):
             local.write(f.read())
             local.close()
         except Exception as e:
-            self.log.error('Unable to export %s: %s' % (self.location, e))
+            self.log.error('Unable to export %s: %s' % (source, e))
             raise
 
         # Extract tarball
