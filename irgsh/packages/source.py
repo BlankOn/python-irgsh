@@ -241,7 +241,29 @@ def _test_run_native():
         shutil.rmtree(target)
 
 def _test_run_non_native():
-    pass
+    from subprocess import Popen
+    from urllib import urlretrieve
+    from ..sources.tarball import Tarball
+    try:
+        dirname = tempfile.mkdtemp()
+        target = tempfile.mkdtemp()
+
+        source = Tarball('http://archive.ubuntu.com/ubuntu/pool/universe/n/nginx/nginx_0.7.65-1ubuntu2.debian.tar.gz')
+        source.export(dirname)
+
+        orig, tmp = urlretrieve('http://archive.ubuntu.com/ubuntu/pool/universe/n/nginx/nginx_0.7.65.orig.tar.gz')
+
+        pkg = SourcePackage(dirname, orig)
+        pkg.generate_dsc(target)
+
+        cmd = 'find %s -ls' % target
+        p = Popen(cmd.split())
+        p.communicate()
+
+    finally:
+        shutil.rmtree(dirname)
+        shutil.rmtree(target)
+        os.unlink(orig)
 
 def _test_run():
     _test_run_native()
