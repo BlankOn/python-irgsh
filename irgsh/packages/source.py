@@ -31,11 +31,13 @@ class SourcePackage(object):
         self._distribution = None
         self._orig = None
 
-        self.log = logging.getLogger('irgsh.packages')
+        self.log = logging.getLogger('irgsh.packages.source')
 
     def generate_dsc(self, target, stdout=None, stderr=None):
         version = self.version.split(':')[-1]
         package_version = '%s-%s' % (self.name, version)
+
+        self.log.debug('Generating dsc file for %s' % package_version)
 
         if self.orig is None:
             self._generate_dsc_native(package_version, target, stdout, stderr)

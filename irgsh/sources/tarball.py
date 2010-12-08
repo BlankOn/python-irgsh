@@ -1,3 +1,4 @@
+import logging
 import tempfile
 from urlparse import urlparse
 import tarfile
@@ -10,6 +11,8 @@ from . import BaseSource, InvalidSourceLocationError, \
 class Tarball(BaseSource):
     def __init__(self, location, **opts):
         super(Tarball, self).__init__(location, **opts)
+
+        self.log = logging.getLogger('irgsh.sources.tarball')
 
     def export(self, target):
         try:

@@ -1,3 +1,5 @@
+import logging
+
 from debian_bundle.deb822 import Changes
 
 from ..utils import get_architecture
@@ -12,6 +14,8 @@ class BaseBuilder(object):
     def __init__(self, distribution, **opts):
         self.distribution = distribution
         self._architecture = None
+
+        self.log = logging.getLogger('irgsh.builders')
 
     @property
     def architecture(self):

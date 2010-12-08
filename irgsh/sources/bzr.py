@@ -1,3 +1,5 @@
+import logging
+
 from bzrlib.branch import Branch
 import bzrlib.export
 
@@ -10,6 +12,8 @@ class BZR(BaseSource):
 
         self.tag = opts.get('tag', None)
         self.revision = opts.get('revision', None)
+
+        self.log = logging.getLogger('irgsh.sources.bzr')
 
     def export(self, target):
         self.log.debug('Exporting %s to %s' % (self.location, target))

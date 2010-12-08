@@ -1,3 +1,4 @@
+import logging
 import os
 from subprocess import Popen
 try:
@@ -16,7 +17,11 @@ class Pbuilder(BaseBuilder):
         self.path = os.path.join(pbuilder_path, self.distribution.name)
         self.configfile = os.path.join(self.path, 'pbuilder.conf')
 
+        self.log = logging.getLogger('irgsh.builders.pbuilder')
+
     def init(self):
+        self.log.debug('Initializing pbuilder directory structure and settings')
+
         # Create directory structure
         paths = [self.path]
         paths += [os.path.join(self.path)
@@ -75,6 +80,8 @@ class Pbuilder(BaseBuilder):
         self.init()
 
     def create(self, stdout=None, stderr=None):
+        self.log.debug('Creating base.tgz')
+
         # TODO: check if pbuilder.conf exists
         cmd = 'sudo pbuilder --create --configfile %s' % self.configfile
 
@@ -84,6 +91,8 @@ class Pbuilder(BaseBuilder):
         return p.returncode
 
     def update(self, stdout=None, stderr=None):
+        self.log.debug('Updating base.tgz')
+
         # TODO: check if pbuilder.conf exists
         cmd = 'sudo pbuilder --update --configfile %s' % self.configfile
 
@@ -93,6 +102,8 @@ class Pbuilder(BaseBuilder):
         return p.returncode
 
     def build(self, dsc, resultdir, stdout=None, stderr=None):
+        self.log.debug('Building %s to %s' % (dsc, resultdir))
+
         # TODO: check if pbuilder.conf exists
         cmds = []
         cmds.append('sudo pbuilder --build')
@@ -105,6 +116,7 @@ class Pbuilder(BaseBuilder):
         p.communicate()
 
         if p.returncode != 0:
+            self.log.error('Error building package %s: %s' % (dsc, p.returncode))
             raise BuildFailedError(dsc)
         else:
             return self.get_changes_file(dsc)
