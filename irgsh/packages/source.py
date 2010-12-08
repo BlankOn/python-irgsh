@@ -230,7 +230,7 @@ def _test_run_native():
         source.export(dirname)
 
         pkg = SourcePackage(dirname)
-        pkg.generate_dsc(target)
+        print '[native] dsc:', pkg.generate_dsc(target)
 
         cmd = 'find %s -ls' % target
         p = Popen(cmd.split())
@@ -254,7 +254,7 @@ def _test_run_non_native():
         orig, tmp = urlretrieve('http://archive.ubuntu.com/ubuntu/pool/universe/n/nginx/nginx_0.7.65.orig.tar.gz')
 
         pkg = SourcePackage(dirname, orig)
-        pkg.generate_dsc(target)
+        print '[non native] dsc:', pkg.generate_dsc(target)
 
         cmd = 'find %s -ls' % target
         p = Popen(cmd.split())
