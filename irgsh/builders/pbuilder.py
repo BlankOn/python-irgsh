@@ -1,83 +1,100 @@
 import os
 from subprocess import Popen, PIPE
-
-from debian_bundle.deb822 import Changes
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 from . import BaseBuilder, BuildFailedError
 from ..utils import read_rcfile
 
 class Pbuilder(BaseBuilder):
-    def __init__(self, distro, **opts):
-        super(Pbuilder, self).__init__(distro, **opts)
+    def __init__(self, distribution, pbuilder_path, **opts):
+        super(Pbuilder, self).__init__(distribution, **opts)
 
-        self.path = opts['path']
-        self.config_file = os.path.join(self.path, self.distro.name,
-                                        'pbuilder.conf')
-        self.config = read_rcfile(self.config_file)
-        self.build_directory = opts.get('build_directory', None)
-        self.results_directory = opts.get('results_directory', None)
+        self.pbuilder_path = pbuilder_path
+        self.path = os.path.join(path, self.distribution.name)
+        self.configfile = os.path.join(self.path, 'pbuilder.conf')
 
-    def build(self, dsc, stdout=PIPE, stderr=PIPE):
-        try:
-            current_dir = os.getcwd()
-            dirname = os.dirname(dsc)
-            os.chdir(dirname)
+    def init(self):
+        # Create directory structure
+        paths = [self.path]
+        paths += [os.path.join(self.path)
+                  for path in ['aptcache', 'result', 'build', 'hook']]
 
-            # FIXME
-            if self.hookdir is not None:
-                pass
+        for path in paths:
+            if not os.path.exists(path):
+                os.makedirs(path)
 
-            args = self.generate_build_arguments(dsc)
-            cmd = 'sudo pbuilder %s' % args
-            p = Popen(cmd.split(), stdout=stdout, stderr=stderr)
-            p.communicate()
+        # Create distribution configuration
+        fname = os.path.join(self.path, 'distribution.json')
+        if not os.path.exists(fname):
+            f = open(fname, 'w')
+            f.write(json.dumps({'name': self.distribution.name,
+                                'mirror': self.distribution.mirror,
+                                'dists': self.distribution.dists,
+                                'components': self.distribution.components,
+                                'extra': self.distribution.extra}))
+            f.close()
 
-            changes = self.get_changes_file(dsc)
-            if not os.path.exists(changes):
-                raise BuildFailedError(dsc)
+        # Create pbuilder configuration
+        if not os.path.exists(self.configfile):
+            def join(*name):
+                return os.path.join(self.path, *name)
 
-            return changes
-        finally:
-            os.chdir(current_dir)
+            config = {'BASETGZ': join('base.tgz'),
+                      'APTCACHE': join('aptcache'),
+                      'BUILDRESULT': join('result'),
+                      'BUILDPLACE': join('build'),
+                      'HOOKDIR': join('hook')
 
-    def get_changes_file(self, dsc):
-        changes = Changes(open(dsc))
-        version = changes['Version'].split(':')[-1]
+            f = open(fname, 'w')
+            f.write('\n'.join(['%s=%s' % (key, value)
+                               for key, value in config.items()]))
+            f.close()
 
-        changes_name = '%s_%s_%s.changes' % (changes['Source'], version,
-                                             self.architecture)
-        fname = os.path.join(self.result_directory, changes_name)
+    def reinit(self):
+        fname = os.path.join(self.path, 'distribution.json')
+        if os.path.exists(fname):
+            os.unlink(fname)
 
-        return fname
+        if os.path.exists(self.configfile):
+            os.unlink(self.configfile)
 
-    def generate_arguments(self):
-        args = []
+        self.init()
 
-        if self.build_directory is not None:
-            args.append('--buildplace %s' % self.build_directory)
+    def create(self, stdout=PIPE, stderr=PIPE):
+        # TODO: check if pbuilder.conf exists
+        cmd = 'sudo pbuilder --create --configfile %s' % self.configfile
 
-        if self.results_directory is not None:
-            args.append('--buildresult %s' % self.results_directory)
+        p = Popen(cmd.split(), stdout=stdout, stderr=stderr)
+        p.communicate()
 
-        # FIXME
-        self.components = None
-        if self.components is not None:
-            # FIXME
-            self.hookdir = None
-            if os.path.isdir(self.hookdir)
+        return p.returncode
 
-        # FIXME
-        self.pbuilder_path = "/var/lib/irgsh/pbuilder"
-        configfile = os.path.join(self.pbuilder_path, self.distro.name,
-                                  'pbuilder.conf')
-        args.append('--configfile %s' % configfile)
+    def update(self, stdout=PIPE, stderr=PIPE):
+        # TODO: check if pbuilder.conf exists
+        cmd = 'sudo pbuilder --update --configfile %s' % self.configfile
 
-        return ' '.join(args)
+        p = Popen(cmd.split(), stdout=stdout, stderr=stderr)
+        p.communicate()
 
-    def generate_build_arguments(self, dsc):
-        args = ['build']
-        args.append(self.generate_arguments())
-        args.append(dsc)
+        return p.returncode
 
-        return ' '.join(args)
+    def build(self, dsc, resultdir, stdout=PIPE, stderr=PIPE):
+        # TODO: check if pbuilder.conf exists
+        cmds = []
+        cmds.append('sudo pbuilder --build')
+        cmds.append('--configfile %s' % self.configfile)
+        cmds.append('--buildresult %s' % resultdir)
+        cmds.append(dsc)
+
+        cmd = ' '.join(cmds)
+        p = Popen(cmd.split(), stdout=stdout, stderr=stderr)
+        p.communicate()
+
+        if p.returncode != 0:
+            raise BuildFailedError()
+        else:
+            return self.get_changes_file(dsc)
 
