@@ -55,3 +55,24 @@ class BZR(BaseSource):
 
 register_source_class('bzr', BZR)
 
+def _test_run():
+    import shutil
+    import tempfile
+    from subprocess import Popen
+    try:
+        tmpdir = tempfile.mkdtemp()
+        print 'Target:', tmpdir
+
+        bzr = BZR('http://www.gnome.org/~jdub/bzr/planet/devel/trunk/')
+        bzr.export(tmpdir)
+
+        cmd = 'find %s -ls' % tmpdir
+        p = Popen(cmd.split())
+        p.communicate()
+
+    finally:
+        shutil.rmtree(tmpdir)
+
+if __name__ == '__init__':
+    _test_run()
+
