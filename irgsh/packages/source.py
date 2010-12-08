@@ -72,7 +72,7 @@ class SourcePackage(object):
         first = tar.next()
 
         if not first.isdir() or \
-           not package_versions.startswith(first.name):
+           not package_version.startswith(first.name):
             raise ValueError, "Orig file's contents mismatch " \
                               "with package version (%s vs %s)" % \
                               (first.name, package_version)
