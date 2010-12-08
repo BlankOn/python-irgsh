@@ -44,8 +44,28 @@ class Tarball(BaseSource):
             t.close()
         except Exception as e:
             self.log.error('Unable to extract tarball %s: %s' % \
-                           (self.location, e))
+                           (source, e))
             raise
 
 register_source_class('tarball', Tarball)
+
+def _test_run():
+    import shutil
+    from subprocess import Popen
+    try:
+        tmpdir = tempfile.mkdtemp()
+        print 'Target:', tmpdir
+
+        tarball = Tarball('http://archive.ubuntu.com/ubuntu/pool/universe/n/nginx/nginx_0.7.65.orig.tar.gz')
+        tarball.export(tmpdir)
+
+        cmd = 'find %s -ls' % tmpdir
+        p = Popen(cmd.split())
+        p.communicate()
+
+    finally:
+        shutil.rmtree(tmpdir)
+
+if __name__ == '__main__':
+    _test_run()
 
