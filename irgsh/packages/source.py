@@ -81,6 +81,11 @@ class SourcePackage(object):
         try:
             os.chdir(target)
 
+            # Find source directory
+            sourcedir = self._find_changelog(self.directory)
+            if sourcedir is None:
+                raise ValueError, 'Unable to find debian/changelog in the source package'
+
             # Extract to .orig directory
             tar.extractall(target)
             dirname = os.path.join(target, first.name)
@@ -88,7 +93,7 @@ class SourcePackage(object):
 
             # Build the source package
             try:
-                shutil.copytree(self.directory, dirname)
+                shutil.copytree(sourcedir, dirname)
 
                 cmd = 'dpkg-source -b -sr %s' % dirname
                 p = Popen(cmd.split(), stdout=stdout, stderr=stderr)
