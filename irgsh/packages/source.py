@@ -214,3 +214,34 @@ class SourcePackage(object):
             self.populate_binaries()
         return self._binaries
 
+def _test_run_native():
+    from subprocess import Popen
+    from ..sources.tarball import Tarball
+    try:
+        dirname = tempfile.mkdtemp()
+        target = tempfile.mkdtemp()
+
+        source = Tarball('http://archive.ubuntu.com/ubuntu/pool/main/a/apt/apt_0.7.25.3ubuntu7.tar.gz')
+        source.export(dirname)
+
+        pkg = SourcePackage(dirname)
+        pkg.generate_dsc(target)
+
+        cmd = 'find %s -ls' % target
+        p = Popen(cmd.split())
+        p.communicate()
+
+    finally:
+        shutil.rmtree(dirname)
+        shutil.rmtree(target)
+
+def _test_run_non_native():
+    pass
+
+def _test_run():
+    _test_run_native()
+    _test_run_non_native()
+
+if __name__ == '__main__':
+    _test_run()
+
