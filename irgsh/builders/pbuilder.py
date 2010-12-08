@@ -109,3 +109,66 @@ class Pbuilder(BaseBuilder):
         else:
             return self.get_changes_file(dsc)
 
+def _test_run():
+    import tempfile
+    import shutil
+    from subprocess import Popen
+    from urllib import urlretrieve
+    from ..distribution import Distribution
+    spec = dict(name='lucid',
+                mirror='http://mirror.liteserver.nl/pub/ubuntu/',
+                dist='lucid',
+                components=['main', 'universe'])
+    distribution = Distribution(**spec)
+
+    def download(target, urls):
+        for url in urls:
+            fname = os.path.join(target, os.path.basename(url))
+            tmp, dummy = urlretrieve(url)
+            shutil.move(tmp, fname)
+
+    def lsdir(path):
+        cmd = 'find %s -ls' % path
+        p = Popen(cmd.split())
+        p.communicate()
+
+    try:
+        stdout = None
+        stderr = None
+
+        resultdir = tempfile.mkdtemp()
+        spath = tempfile.mkdtemp()
+        download(spath, ['http://archive.ubuntu.com/ubuntu/pool/universe/n/nginx/nginx_0.7.65-1ubuntu2.dsc',
+                         'http://archive.ubuntu.com/ubuntu/pool/universe/n/nginx/nginx_0.7.65.orig.tar.gz',
+                         'http://archive.ubuntu.com/ubuntu/pool/universe/n/nginx/nginx_0.7.65-1ubuntu2.debian.tar.gz'])
+        dsc = os.path.join(spath, 'nginx_0.7.65-1ubuntu2.dsc')
+        print '# Sources'
+        lsdir(spath)
+
+        path = tempfile.mkdtemp()
+        builder = Pbuilder(distribution, path)
+        builder.init()
+        print '# pbuilder directory'
+        lsdir(path)
+
+        builder.create(stdout=stdout, stderr=stderr)
+        print '# base.tgz'
+        lsdir(path)
+
+        changes = builder.build(dsc, resultdir, stdout=stdout, stderr=stderr)
+        print 'Changes:', changes
+        lsdir(resultdir)
+
+    except Exception, e:
+        print e
+        raise
+
+    finally:
+        shutil.rmtree(spath)
+        print 'Please remove the following directories using sudo/root:'
+        print '-', path
+        print '-', resultdir
+
+if __name__ == '__main__':
+    _test_run()
+
