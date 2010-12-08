@@ -34,7 +34,7 @@ class SourcePackage(object):
         self.log = logging.getLogger('irgsh.packages')
 
     def generate_dsc(self, target, stdout=PIPE, stderr=PIPE):
-        version = version.split(':')[-1]
+        version = self.version.split(':')[-1]
         package_version = '%s-%s' % (self.name, version)
 
         if self.orig is None:
@@ -109,7 +109,7 @@ class SourcePackage(object):
         maintainer = None
         for block in re.split(r'\n\n+', content):
             f = StringIO(block)
-            source = Source(f)
+            source = Sources(f)
             name = source.get('Source', None)
             maintainer = source.get('Maintainer', None)
             if name is not None and maintainer is not None:
@@ -133,7 +133,7 @@ class SourcePackage(object):
         self._distribution = changelog.distributions
 
         self.log.debug('Source: %s (%s) %s' % (self._name, self._version, self._distribution))
-        self._metadata_popupated = True
+        self._metadata_populated = True
 
     def populate_binaries(self):
         # TODO
@@ -141,37 +141,37 @@ class SourcePackage(object):
 
     @property
     def last_changelog(self):
-        if not self._metadata_popupated:
+        if not self._metadata_populated:
             self.parse_metadata()
         return self._last_changelog
 
     @property
     def name(self):
-        if not self._metadata_popupated:
+        if not self._metadata_populated:
             self.parse_metadata()
         return self._name
 
     @property
     def maintainer(self):
-        if not self._metadata_popupated:
+        if not self._metadata_populated:
             self.parse_metadata()
         return self._maintainer
 
     @property
     def changed_by(self):
-        if not self._metadata_popupated:
+        if not self._metadata_populated:
             self.parse_metadata()
         return self._changed_by
 
     @property
     def version(self):
-        if not self._metadata_popupated:
+        if not self._metadata_populated:
             self.parse_metadata()
         return self._version
 
     @property
     def distribution(self):
-        if not self._metadata_popupated:
+        if not self._metadata_populated:
             self.parse_metadata()
         return self._distribution
 
