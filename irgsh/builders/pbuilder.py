@@ -1,5 +1,5 @@
 import os
-from subprocess import Popen, PIPE
+from subprocess import Popen
 try:
     import simplejson as json
 except ImportError:
@@ -74,7 +74,7 @@ class Pbuilder(BaseBuilder):
 
         self.init()
 
-    def create(self, stdout=PIPE, stderr=PIPE):
+    def create(self, stdout=None, stderr=None):
         # TODO: check if pbuilder.conf exists
         cmd = 'sudo pbuilder --create --configfile %s' % self.configfile
 
@@ -83,7 +83,7 @@ class Pbuilder(BaseBuilder):
 
         return p.returncode
 
-    def update(self, stdout=PIPE, stderr=PIPE):
+    def update(self, stdout=None, stderr=None):
         # TODO: check if pbuilder.conf exists
         cmd = 'sudo pbuilder --update --configfile %s' % self.configfile
 
@@ -92,7 +92,7 @@ class Pbuilder(BaseBuilder):
 
         return p.returncode
 
-    def build(self, dsc, resultdir, stdout=PIPE, stderr=PIPE):
+    def build(self, dsc, resultdir, stdout=None, stderr=None):
         # TODO: check if pbuilder.conf exists
         cmds = []
         cmds.append('sudo pbuilder --build')

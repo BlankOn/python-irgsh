@@ -5,7 +5,7 @@ import os
 import tarfile
 import re
 import shutil
-from subprocess import Popen, PIPE
+from subprocess import Popen
 
 from debian_bundle.deb822 import Sources
 from debian_bundle.changelog import Changelog
@@ -33,7 +33,7 @@ class SourcePackage(object):
 
         self.log = logging.getLogger('irgsh.packages')
 
-    def generate_dsc(self, target, stdout=PIPE, stderr=PIPE):
+    def generate_dsc(self, target, stdout=None, stderr=None):
         version = self.version.split(':')[-1]
         package_version = '%s-%s' % (self.name, version)
 
@@ -46,7 +46,7 @@ class SourcePackage(object):
         return '%s_%s.dsc' % (self.name, version)
 
     def _generate_dsc_native(self, package_version, target,
-                             stdout=PIPE, stderr=PIPE):
+                             stdout=None, stderr=None):
         """Generate dsc for native package."""
         current_dir = os.getcwd()
         try:
@@ -64,7 +64,7 @@ class SourcePackage(object):
             os.chdir(current_dir)
 
     def _generate_dsc_with_orig(self, package_version, target,
-                                stdout=PIPE, stderr=PIPE):
+                                stdout=None, stderr=None):
         """Generate dsc for non-native package."""
 
         # Check orig file

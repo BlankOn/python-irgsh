@@ -2,13 +2,12 @@ import os
 import urllib
 import shutil
 import tempfile
-from subprocess import PIPE
 
 from .packages.source import SourcePackage
 
 class Packager(object):
     def __init__(self, source, builder, resultdir, orig=None,
-                 stdout=PIPE, stderr=PIPE):
+                 stdout=None, stderr=None):
         self.source = source
         self.builder = builder
         self.resultdir = resultdir

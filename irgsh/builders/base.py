@@ -1,5 +1,3 @@
-from subprocess import PIPE
-
 from debian_bundle.deb822 import Changes
 
 from ..utils import get_architecture
@@ -21,7 +19,7 @@ class BaseBuilder(object):
             self._architecture = get_architecture()
         return self._architecture
 
-    def build(self, dsc, resultdir, stdout=PIPE, stderr=PIPE):
+    def build(self, dsc, resultdir, stdout=None, stderr=None):
         '''
         Build package given its dsc file.
 
