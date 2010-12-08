@@ -52,7 +52,11 @@ class SourcePackage(object):
         try:
             os.chdir(target)
 
-            cmd = 'dpkg-source -b %s' % self.directory
+            directory = self._find_changelog(self.directory, package_version)
+            if directory is None:
+                raise ValueError, 'Unable to find debian/changelog in the source package'
+
+            cmd = 'dpkg-source -b %s' % directory
             p = Popen(cmd.split(), stdout=stdout, stderr=stderr)
             p.communicate()
 
@@ -95,12 +99,41 @@ class SourcePackage(object):
         finally:
             os.chdir(current_dir)
 
+    def _find_changelog(self, dirname, package_version=None):
+        # Check for debian/changelog
+        if os.path.exists(os.path.join(dirname, 'debian', 'changelog')):
+            return dirname
+
+        if package_version is not None:
+            # Check whether the source is inside a known subdirectory
+            subdir = os.path.join(dirname, package_version)
+            if not os.path.exists(subdir):
+                return None
+            if not os.path.exists(os.path.join(subdir, 'debian', 'changelog')):
+                return None
+            return subdir
+
+        # There should be only one directory
+        items = os.listdir(dirname)
+        if len(items) != 1:
+            return None
+
+        subdir = os.path.join(dirname, items[0])
+        if not os.path.exists(os.path.join(subdir, 'debian', 'changelog')):
+            return None
+
+        return subdir
+
     def parse_metadata(self):
         #
         # Read control file
         #
         self.log.debug('Reading debian/control file')
-        fname = os.path.join(self.directory, 'debian', 'control')
+        dirname = self._find_changelog(self.directory)
+        if dirname is None:
+             raise ValueError, 'Unable to find debian/control in the source package'
+
+        fname = os.path.join(dirname, 'debian', 'control')
         content = open(fname).read()
 
         # There might be a case when the source package is not defined
@@ -125,7 +158,7 @@ class SourcePackage(object):
         # Read changelog file
         #
         self.log.debug('Reading debian/changelog file')
-        fname = os.path.join(self.directory, 'debian', 'changelog')
+        fname = os.path.join(dirname, 'debian', 'changelog')
         changelog = Changelog(open(fname))
 
         self._changed_by = changelog.author
