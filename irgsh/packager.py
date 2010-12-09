@@ -11,7 +11,6 @@ class Packager(object):
         self.specification = specification
         self.builder = builder
         self.resultdir = resultdir
-        self.orig = orig
         self.stdout = stdout
         self.stderr = stderr
 
