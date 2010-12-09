@@ -123,7 +123,6 @@ class Pbuilder(BaseBuilder):
 def _test_run():
     import tempfile
     import shutil
-    from subprocess import Popen
     from urllib import urlretrieve
     from ..distribution import Distribution
     spec = dict(name='lucid',

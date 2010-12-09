@@ -1,5 +1,4 @@
 import logging
-import shutil
 import os
 from subprocess import Popen
 import tempfile

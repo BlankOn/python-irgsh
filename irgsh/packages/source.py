@@ -29,6 +29,7 @@ class SourcePackage(object):
         self._changed_by = None
         self._version = None
         self._distribution = None
+        self._last_changelog = None
         self._orig = None
 
         self.log = logging.getLogger('irgsh.packages.source')
@@ -138,7 +139,7 @@ class SourcePackage(object):
         self.log.debug('Reading debian/control file')
         dirname = self._find_changelog(self.directory)
         if dirname is None:
-             raise ValueError, 'Unable to find debian/control in the source package'
+            raise ValueError, 'Unable to find debian/control in the source package'
 
         fname = os.path.join(dirname, 'debian', 'control')
         content = open(fname).read()
@@ -222,7 +223,6 @@ class SourcePackage(object):
         return self._binaries
 
 def _test_run_native():
-    from subprocess import Popen
     from ..sources.tarball import Tarball
     try:
         dirname = tempfile.mkdtemp()
@@ -243,7 +243,6 @@ def _test_run_native():
         shutil.rmtree(target)
 
 def _test_run_non_native():
-    from subprocess import Popen
     from urllib import urlretrieve
     from ..sources.tarball import Tarball
     try:

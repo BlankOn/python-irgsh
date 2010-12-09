@@ -21,8 +21,8 @@ class Packager(object):
             fname = self._generate_dsc(target)
 
             dsc = os.path.join(target, fname)
-            result = builder.build(dsc, self.resultdir,
-                                   self.stdout, self.stderr)
+            result = self.builder.build(dsc, self.resultdir,
+                                        self.stdout, self.stderr)
 
             return result
 
