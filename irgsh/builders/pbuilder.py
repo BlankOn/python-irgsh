@@ -7,7 +7,6 @@ except ImportError:
     import json
 
 from . import BaseBuilder, BuildFailedError
-from ..utils import read_rcfile
 
 class Pbuilder(BaseBuilder):
     def __init__(self, distribution, pbuilder_path, **opts):
