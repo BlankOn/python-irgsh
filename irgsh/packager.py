@@ -6,9 +6,9 @@ import tempfile
 from .packages.source import SourcePackage
 
 class Packager(object):
-    def __init__(self, source, builder, resultdir, orig=None,
+    def __init__(self, specification, builder, resultdir,
                  stdout=None, stderr=None):
-        self.source = source
+        self.specification = speficiation
         self.builder = builder
         self.resultdir = resultdir
         self.orig = orig
@@ -32,17 +32,19 @@ class Packager(object):
     def _generate_dsc(self, target):
         try:
             dirname = tempfile.mkdtemp('-irgsh-builder-source')
-            self.source.export(dirname)
+            source = self.specification.get_source()
+            source.export(dirname)
 
-            orig = None
-            if self.orig is not None:
-                (orig, tmp) = urllib.urlretrieve(self.orig)
-
-            source = SourcePackage(dirname, orig)
-            dsc = source.generate_dsc(target, self.stdout, self.stderr)
-
+            orig = self.specification.orig
+            orig_path = None
             if orig is not None:
-                os.remove(orig)
+                (orig_path, tmp) = urllib.urlretrieve(orig)
+
+            pkg = SourcePackage(dirname, orig_path)
+            dsc = pkg.generate_dsc(target, self.stdout, self.stderr)
+
+            if orig_path is not None:
+                os.remove(orig_path)
 
             return dsc
 
