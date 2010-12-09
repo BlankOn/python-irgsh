@@ -49,3 +49,45 @@ class Packager(object):
         finally:
             shutil.rmtree(dirname)
 
+def _test_run():
+    from subprocess import Popen
+    from .sources.tarball import Tarball
+    from .builders.pbuilder import Pbuilder
+    from .distribution import Distribution
+
+    def lsdir(path):
+        cmd = 'find %s -ls' % path
+        p = Popen(cmd.split())
+        p.communicate()
+
+    try:
+        target = tempfile.mkdtemp()
+        pbuilder_path = tempfile.mkdtemp()
+
+        spec = dict(name='lucid',
+                    mirror='http://mirror.liteserver.nl/pub/ubuntu/',
+                    dist='lucid',
+                    components=['main', 'universe'])
+        distribution = Distribution(**spec)
+        source = Tarball('http://archive.ubuntu.com/ubuntu/pool/universe/n/nginx/nginx_0.7.65-1ubuntu2.debian.tar.gz')
+        orig = 'http://archive.ubuntu.com/ubuntu/pool/universe/n/nginx/nginx_0.7.65.orig.tar.gz'
+        builder = Pbuilder(distribution, pbuilder_path)
+
+        # the following two should be done automatically
+        builder.init()
+        builder.create()
+
+        packager = Packager(source, builder, target, orig=orig)
+        packager.build()
+
+        lsdir(pbuilder_path)
+        lsdir(target)
+
+    finally:
+        shutil.rmtree(target)
+        print 'Please remove the following directory:'
+        print '-', pbuilder_path
+
+if __name__ == '__main__':
+    _test_run()
+
