@@ -37,6 +37,10 @@ class Dput(BaseUploader):
             p = Popen(cmd.split(), stdout=stdout, stderr=stderr)
             p.communicate()
 
+            if p.returncode != 0:
+                raise UploadFailedError, 'Fail to upload %s: %s' % \
+                                         (changes, p.returncode)
+
         finally:
             os.unlink(config)
 
