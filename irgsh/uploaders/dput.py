@@ -1,3 +1,4 @@
+import logging
 import shutil
 import os
 from subprocess import Popen
@@ -28,7 +29,14 @@ incoming                = incoming/
 '''
 
 class Dput(BaseUploader):
+    def __init__(self, distribution, **opts):
+        super(Dput, self).__init__(distribution, **opts)
+
+        self.log = logging.getLogger('irgsh.uploaders.dput')
+
     def upload(self, changes, stdout=None, stderr=None):
+        self.log.debug('Uploading %s' % changes)
+
         try:
             fd, config = tempfile.mkstemp('-irgsh-dput')
             self._create_config(config)
@@ -38,6 +46,7 @@ class Dput(BaseUploader):
             p.communicate()
 
             if p.returncode != 0:
+                self.log.error('Upload failed, returncode: %s' % p.returncode)
                 raise UploadFailedError, 'Fail to upload %s: %s' % \
                                          (changes, p.returncode)
 
