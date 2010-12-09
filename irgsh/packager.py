@@ -8,7 +8,7 @@ from .packages.source import SourcePackage
 class Packager(object):
     def __init__(self, specification, builder, resultdir,
                  stdout=None, stderr=None):
-        self.specification = speficiation
+        self.specification = specification
         self.builder = builder
         self.resultdir = resultdir
         self.orig = orig
