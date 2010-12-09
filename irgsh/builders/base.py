@@ -3,12 +3,7 @@ import logging
 from debian_bundle.deb822 import Changes
 
 from ..utils import get_architecture
-
-class BuildFailedError(Exception):
-    def __init__(self, source):
-        self.source = source
-    def __str__(self):
-        return 'Build failed: %s' % self.source
+from ..error import BuildFailedError
 
 class BaseBuilder(object):
     def __init__(self, distribution, **opts):

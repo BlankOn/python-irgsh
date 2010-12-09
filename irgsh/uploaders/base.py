@@ -1,7 +1,6 @@
 import logging
 
-class UploadFailedError(Exception):
-    pass
+from ..error import UploadFailedError
 
 class BaseUploader(object):
     def __init__(self, distribution, **opts):

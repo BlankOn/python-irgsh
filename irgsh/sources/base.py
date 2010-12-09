@@ -1,17 +1,6 @@
 import logging
 
-class InvalidSourceLocationError(Exception):
-    def __init__(self, location, msg=None):
-        self.location = location
-        self.msg = msg
-
-        desc = 'Invalid source location: %s' % self.location
-        if msg is not None:
-            desc = '%s (%s)' % (desc, msg)
-        super(InvalidSourceLocationError, self).__init__(desc)
-
-class InvalidSourceNameError(Exception):
-    pass
+from ..error import InvalidSourceLocationError, InvalidSourceNameError
 
 class BaseSource(object):
     """Package source definition.

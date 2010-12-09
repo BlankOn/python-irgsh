@@ -10,8 +10,7 @@ from subprocess import Popen
 from debian_bundle.deb822 import Sources
 from debian_bundle.changelog import Changelog
 
-class InvalidControlFile(Exception):
-    pass
+from ..error import InvalidControlFile
 
 class SourcePackage(object):
     def __init__(self, directory, orig=None):
