@@ -56,6 +56,7 @@ def _test_run():
     from .sources.tarball import Tarball
     from .builders.pbuilder import Pbuilder
     from .distribution import Distribution
+    from .specification import Specification
 
     def lsdir(path):
         cmd = 'find %s -ls' % path
@@ -66,20 +67,23 @@ def _test_run():
         target = tempfile.mkdtemp()
         pbuilder_path = tempfile.mkdtemp()
 
-        spec = dict(name='lucid',
-                    mirror='http://mirror.liteserver.nl/pub/ubuntu/',
-                    dist='lucid',
-                    components=['main', 'universe'])
-        distribution = Distribution(**spec)
-        source = Tarball('http://archive.ubuntu.com/ubuntu/pool/universe/n/nginx/nginx_0.7.65-1ubuntu2.debian.tar.gz')
+        location = 'http://archive.ubuntu.com/ubuntu/pool/universe/n/nginx/nginx_0.7.65-1ubuntu2.debian.tar.gz'
         orig = 'http://archive.ubuntu.com/ubuntu/pool/universe/n/nginx/nginx_0.7.65.orig.tar.gz'
+        specification = Specification(location, orig, 'tarball')
+
+        distro = dict(name='lucid',
+                      mirror='http://mirror.liteserver.nl/pub/ubuntu/',
+                      dist='lucid',
+                      components=['main', 'universe'])
+        distribution = Distribution(**distro)
+
         builder = Pbuilder(distribution, pbuilder_path)
 
         # the following two should be done automatically
         builder.init()
         builder.create()
 
-        packager = Packager(source, builder, target, orig=orig)
+        packager = Packager(specification, builder, target)
         packager.build()
 
         lsdir(pbuilder_path)
