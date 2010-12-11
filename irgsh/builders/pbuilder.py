@@ -103,6 +103,11 @@ class Pbuilder(BaseBuilder):
     def build(self, dsc, resultdir, stdout=None, stderr=None):
         self.log.debug('Building %s to %s' % (dsc, resultdir))
 
+        # Check if base.tgz exists, if not initialize the builder
+        if not os.path.exists(os.path.join(self.path, 'base.tgz')):
+            self.init()
+            self.create(stdout, stderr)
+
         # TODO: check if pbuilder.conf exists
         cmds = []
         cmds.append('sudo pbuilder --build')
