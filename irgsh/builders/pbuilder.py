@@ -108,6 +108,12 @@ class Pbuilder(BaseBuilder):
             self.init()
             self.create(stdout, stderr)
 
+            # TODO
+            # - add file locking so other process won't try to
+            #   initialize the builder again
+            # - the lock contains pid so the its validity
+            #   can be checked
+
         # TODO: check if pbuilder.conf exists
         cmds = []
         cmds.append('sudo pbuilder --build')
