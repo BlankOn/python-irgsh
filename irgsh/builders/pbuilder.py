@@ -12,8 +12,8 @@ class Pbuilder(BaseBuilder):
     def __init__(self, distribution, pbuilder_path, **opts):
         super(Pbuilder, self).__init__(distribution, **opts)
 
-        self.pbuilder_path = pbuilder_path
-        self.path = os.path.join(pbuilder_path, self.distribution.name)
+        self.pbuilder_path = os.path.abspath(pbuilder_path)
+        self.path = os.path.join(self.pbuilder_path, self.distribution.name)
         self.configfile = os.path.join(self.path, 'pbuilder.conf')
 
         self.log = logging.getLogger('irgsh.builders.pbuilder')
