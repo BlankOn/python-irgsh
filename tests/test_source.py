@@ -23,6 +23,12 @@ class SourceTestCase(TestCase):
         self.assertEqual(source.version, '0.1')
         self.assertEqual(source.distribution, 'ombilin')
 
-        # TODO source.last_changelog
+        changelog = source.last_changelog
+        self.assertEqual(changelog.package, 'python-irgsh')
+        self.assertEqual(changelog.distributions, 'ombilin')
+        self.assertEqual(changelog.urgency, 'low')
+        self.assertEqual(changelog.author, 'mdamt <mdamt@di.blankon.in>')
+        self.assertEqual(changelog.date, 'Sun, 21 Mar 2010 10:44:56 +0200')
+
         # TODO source.binaries
 
