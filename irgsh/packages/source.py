@@ -7,7 +7,7 @@ import re
 import shutil
 from subprocess import Popen
 
-from debian_bundle.deb822 import Sources
+from debian_bundle.deb822 import Packages
 from debian_bundle.changelog import Changelog
 
 from ..error import InvalidControlFile
@@ -141,18 +141,13 @@ class SourcePackage(object):
             raise ValueError, 'Unable to find debian/control in the source package'
 
         fname = os.path.join(dirname, 'debian', 'control')
-        content = open(fname).read()
 
-        # There might be a case when the source package is not defined
-        # in the beginning
         name = None
         maintainer = None
-        for block in re.split(r'\n\n+', content):
-            f = StringIO(block)
-            source = Sources(f)
-            name = source.get('Source', None)
-            maintainer = source.get('Maintainer', None)
-            if name is not None and maintainer is not None:
+        for desc in Packages.iter_paragraphs(open(fname)):
+            if desc.has_key('Source'):
+                name = desc.get('Source', None)
+                maintainer = desc.get('Maintainer', None)
                 break
 
         if name is None or maintainer is None:
