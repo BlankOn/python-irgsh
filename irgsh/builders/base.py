@@ -1,6 +1,9 @@
 import logging
 
-from debian_bundle.deb822 import Changes
+try:
+    from debian.deb822 import Changes
+except ImportError:
+    from debian_bundle.deb822 import Changes
 
 from ..utils import get_architecture
 from ..error import BuildFailedError

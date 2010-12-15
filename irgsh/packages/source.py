@@ -7,8 +7,12 @@ import re
 import shutil
 from subprocess import Popen
 
-from debian_bundle.deb822 import Packages
-from debian_bundle.changelog import Changelog
+try:
+    from debian.deb822 import Packages
+    from debian.changelog import Changelog
+except ImportError:
+    from debian_bundle.deb822 import Packages
+    from debian_bundle.changelog import Changelog
 
 from ..error import InvalidControlFile
 
