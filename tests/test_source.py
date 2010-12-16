@@ -3,7 +3,7 @@ import os
 import shutil
 from unittest import TestCase
 
-class SourceTestCase(TestCase):
+class OrderedTestCase(TestCase):
     def setUp(self):
         self.directory = tempfile.mkdtemp()
         self.debian = os.path.join(self.directory, 'debian')
@@ -13,7 +13,7 @@ class SourceTestCase(TestCase):
     def tearDown(self):
         shutil.rmtree(self.directory)
 
-    def testBlah(self):
+    def testContent(self):
         from irgsh.packages.source import SourcePackage
         source = SourcePackage(self.directory)
 
@@ -31,4 +31,10 @@ class SourceTestCase(TestCase):
         self.assertEqual(changelog.date, 'Sun, 21 Mar 2010 10:44:56 +0200')
 
         # TODO source.binaries
+
+class UnorderedTestCase(OrderedTestCase):
+    def setUp(self):
+        super(UnorderedTestCase, self).setUp()
+        shutil.copy(os.path.join(self.debian, 'control.unordered'),
+                    os.path.join(self.debian, 'control'))
 
