@@ -118,8 +118,6 @@ class SourcePackage(object):
         if package_version is not None:
             # Check whether the source is inside a known subdirectory
             subdir = os.path.join(dirname, package_version)
-            if not os.path.exists(subdir):
-                return None
             if not os.path.exists(os.path.join(subdir, 'debian', 'changelog')):
                 return None
             return subdir
