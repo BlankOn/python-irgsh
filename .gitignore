@@ -8,4 +8,6 @@ develop-eggs/
 eggs/
 parts/
 build/
+.coverage
+cover/
 
