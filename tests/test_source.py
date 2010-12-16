@@ -41,6 +41,38 @@ class UnorderedTestCase(OrderedTestCase):
         shutil.copy(os.path.join(self.debian, 'control.unordered'),
                     os.path.join(self.debian, 'control'))
 
+class EmptyTestCase(SourceTestCase):
+    def setUp(self):
+        super(EmptyTestCase, self).setUp()
+        shutil.copy(os.path.join(self.debian, 'control.empty'),
+                    os.path.join(self.debian, 'control'))
+
+    def testContent(self):
+        from irgsh.packages.source import SourcePackage, InvalidControlFile
+        source = SourcePackage(self.directory)
+
+        try:
+            name = source.name
+            self.fail()
+        except InvalidControlFile:
+            pass
+
+class InvalidTestCase(SourceTestCase):
+    def setUp(self):
+        super(InvalidTestCase, self).setUp()
+        shutil.copy(os.path.join(self.debian, 'control.invalid'),
+                    os.path.join(self.debian, 'control'))
+
+    def testContent(self):
+        from irgsh.packages.source import SourcePackage, InvalidControlFile
+        source = SourcePackage(self.directory)
+
+        try:
+            name = source.name
+            self.fail()
+        except InvalidControlFile:
+            pass
+
 class DscCallTestCase(SourceTestCase):
     def testNative(self):
         from irgsh.packages.source import SourcePackage
