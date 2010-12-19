@@ -1,10 +1,18 @@
 class Specification(object):
     def __init__(self, location, orig=None,
-                 source_type='tarball', source_opts={}):
+                 source_type='tarball', source_opts=None):
         self.location = location
-        self.orig = orig
         self.source_type = source_type
-        self.source_opts = source_opts
+
+        self.orig = None
+        if type(orig) in [str, unicode]:
+            orig = orig.strip()
+            if len(orig) > 0:
+                self.orig = orig
+
+        self.source_opts = {}
+        if source_opts is not None:
+            self.source_opts = source_opts
 
         self._source = None
 
