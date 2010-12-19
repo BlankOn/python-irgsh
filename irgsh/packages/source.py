@@ -14,6 +14,7 @@ except ImportError:
     from debian_bundle.deb822 import Packages
     from debian_bundle.changelog import Changelog
 
+from ..utils import find_changelog
 from ..error import InvalidControlFile
 
 class SourcePackage(object):
@@ -111,27 +112,7 @@ class SourcePackage(object):
             os.chdir(current_dir)
 
     def _find_changelog(self, dirname, package_version=None):
-        # Check for debian/changelog
-        if os.path.exists(os.path.join(dirname, 'debian', 'changelog')):
-            return dirname
-
-        if package_version is not None:
-            # Check whether the source is inside a known subdirectory
-            subdir = os.path.join(dirname, package_version)
-            if not os.path.exists(os.path.join(subdir, 'debian', 'changelog')):
-                return None
-            return subdir
-
-        # There should be only one directory
-        items = os.listdir(dirname)
-        if len(items) != 1:
-            return None
-
-        subdir = os.path.join(dirname, items[0])
-        if not os.path.exists(os.path.join(subdir, 'debian', 'changelog')):
-            return None
-
-        return subdir
+        return find_changelog(dirname, package_version)
 
     def parse_metadata(self):
         #
