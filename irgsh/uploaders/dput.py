@@ -36,7 +36,7 @@ class Dput(BaseUploader):
         self.host = opts['host']
         self.path = opts['path']
 
-    def upload(self, changes, stdout=None, stderr=None):
+    def upload(self, changes, stdout=PIPE, stderr=PIPE):
         self.log.debug('Uploading %s' % changes)
 
         try:
