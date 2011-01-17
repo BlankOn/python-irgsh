@@ -21,10 +21,10 @@ progress_indicator      = 2
 default_host_main       = %(name)s
 
 [%(name)s]
-login                   = incoming
-fqdn                    = irgsh.blankonlinux.or.id
+login                   = %(user)s
+fqdn                    = %(host)s
 method                  = scp
-incoming                = incoming/
+incoming                = %(path)s
 '''
 
 class Dput(BaseUploader):
@@ -32,6 +32,9 @@ class Dput(BaseUploader):
         super(Dput, self).__init__(distribution, **opts)
 
         self.log = logging.getLogger('irgsh.uploaders.dput')
+        self.user = opts['user']
+        self.host = opts['host']
+        self.path = opts['path']
 
     def upload(self, changes, stdout=None, stderr=None):
         self.log.debug('Uploading %s' % changes)
@@ -53,7 +56,12 @@ class Dput(BaseUploader):
             os.unlink(config)
 
     def _create_config(self, target):
-        config = CONFIG_TEMPLATE % {'name': self.distribution.name}
+        param = {'name': self.distribution.name,
+                 'host': self.host,
+                 'path': self.path,
+                 'user': self.user}
+        config = CONFIG_TEMPLATE % param
+
         f = open(target, 'w')
         f.write(config)
         f.close()
