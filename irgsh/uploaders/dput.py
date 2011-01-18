@@ -1,6 +1,6 @@
 import logging
 import os
-from subprocess import Popen
+from subprocess import Popen, PIPE
 import tempfile
 
 from . import BaseUploader, UploadFailedError
