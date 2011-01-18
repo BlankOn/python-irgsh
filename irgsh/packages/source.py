@@ -149,9 +149,7 @@ class SourcePackage(object):
         self._changed_by = changelog.author
         self._version = changelog.version.full_version
         self._distribution = changelog.distributions
-        for block in changelog:
-            self._last_changelog = block
-            break
+        self._last_changelog = changelog._blocks[0]
 
         self.log.debug('Source: %s (%s) %s' % (self._name, self._version, self._distribution))
         self._metadata_populated = True
