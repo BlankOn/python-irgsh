@@ -49,8 +49,7 @@ class Dput(BaseUploader):
 
             if p.returncode != 0:
                 self.log.error('Upload failed, returncode: %s' % p.returncode)
-                raise UploadFailedError, 'Fail to upload %s: %s' % \
-                                         (changes, p.returncode)
+                raise UploadFailedError(changes, p.returncode)
 
         finally:
             os.unlink(config)
