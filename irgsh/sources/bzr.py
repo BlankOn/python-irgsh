@@ -37,7 +37,7 @@ class BZR(BaseSource):
             try:
                 revid = remote.tags.lookup_tag(self.tag)
             except Exception, e:
-                desc = "Unknown tag '%s'" % self.revision
+                desc = "Unknown tag '%s'" % self.tag
                 raise InvalidSourceLocationError(self.location, desc)
 
         else:
