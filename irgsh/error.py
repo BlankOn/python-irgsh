@@ -21,7 +21,12 @@ class InvalidSourceNameError(IrgshException):
     pass
 
 class UploadFailedError(IrgshException):
-    pass
+    def __init__(self, changes, code, log=None):
+        self.changes = changes
+        self.code = code
+        self.log = log
+    def __str__(self):
+        return 'Build failed: %s (%s)' % (self.changes, self.code)
 
 class InvalidControlFile(IrgshException):
     pass
