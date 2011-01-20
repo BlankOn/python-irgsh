@@ -154,8 +154,7 @@ def _test_run():
         p.communicate()
 
     try:
-        stdout = None
-        stderr = None
+        logger = None
 
         resultdir = tempfile.mkdtemp()
         spath = tempfile.mkdtemp()
@@ -172,11 +171,11 @@ def _test_run():
         print '# pbuilder directory'
         lsdir(path)
 
-        builder.create(stdout=stdout, stderr=stderr)
+        builder.create(logger=logger)
         print '# base.tgz'
         lsdir(path)
 
-        changes = builder.build(dsc, resultdir, stdout=stdout, stderr=stderr)
+        changes = builder.build(dsc, resultdir, logger=logger)
         print 'Changes:', changes
         lsdir(resultdir)
 
