@@ -35,8 +35,43 @@ class SourcePackageBuilder(object):
         This function returns the .dsc filename
         '''
         try:
-            tmp = tempfile.mkdtemp('-irgsh-srcpkg')
             cwd = os.getcwd()
+            build_path = tempfile.mkdtemp('-irgsh-srcpkg')
+
+            # Prepare source directory
+            package, version = self.prepare_source(build_path)
+            source = '%s-%s' % (package, version)
+
+            # Build
+            os.chdir(build_path)
+            cmd = 'dpkg-source -b %s' % source
+            p = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+            out, err = p.communicate()
+
+            # Move result to the given target directory,
+            # existing files will be replaced
+            dsc = '%s_%s.dsc' % (package, version)
+            files = [dsc]
+
+            dsc_path = os.path.join(build_path, dsc)
+            src = Sources(open(dsc_path))
+            files += [item['name'] for item in src['Files']]
+
+            for fname in files:
+                target_path = os.path.join(target, fname)
+                if os.path.exists(target_path):
+                    os.unlink(target_path)
+                shutil.move(os.path.join(build_path, fname), target_path)
+
+            return dsc
+
+        finally:
+            shutil.rmtree(build_path)
+            os.chdir(cwd)
+
+    def prepare_source(self, target):
+        try:
+            tmp = tempfile.mkdtemp('-irgsh-srcpkg-prepare')
 
             # Download and extract source
             source_path = os.path.join(tmp, 'source')
@@ -50,55 +85,34 @@ class SourcePackageBuilder(object):
             if self.orig is not None:
                 orig = self.download_orig(orig_path)
 
-            # Combine
+            # Combine source and orig
             combined_path = os.path.join(tmp, 'combine')
             os.makedirs(combined_path)
             combined_path = self.combine(source, orig, combined_path)
 
-            # Find combined source directory
-            source_path = find_debian(combined_path)
-            if source_path is None:
+            # Check for debian directory
+            combined_path = find_debian(combined_path)
+            if combined_path is None:
                 raise ValueError, 'Unable to find debian directory'
 
             # Get version information
-            package, version = get_package_version(source_path)
+            package, version = get_package_version(combined_path)
 
-            # Copy source directory
-            build_path = os.path.join(tmp, 'build')
-            os.makedirs(build_path)
-            final_path = os.path.join(build_path, '%s-%s' % (package, version))
-            shutil.move(source_path, final_path)
+            # Move source directory
+            final_path = os.path.join(target, '%s-%s' % (package, version))
+            shutil.move(combined_path, final_path)
 
-            # Copy orig file and adjust its name, if available
+            # Move and rename orig file, if available
             if orig is not None:
                 upstream = version.split('-')[0]
-                orig_path = os.path.join(build_path, '%s_%s.orig.tar.gz' % \
-                                                     (package, upstream))
+                orig_path = os.path.join(target, '%s_%s.orig.tar.gz' % \
+                                                  (package, upstream))
                 shutil.move(orig, orig_path)
 
-            # Build
-            os.chdir(build_path)
-
-            cmd = 'dpkg-source -b %s' % os.path.abspath(final_path)
-            p = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
-            p.communicate()
-
-            # Move result to the given target directory
-            dsc = '%s_%s.dsc' % (package, version)
-            files = [dsc]
-
-            dsc_path = os.path.join(build_path, dsc)
-            src = Sources(open(dsc_path))
-            files += [item['name'] for item in src['Files']]
-
-            for fname in files:
-                shutil.move(os.path.join(build_path, fname), target)
-
-            return dsc
+            return package, version
 
         finally:
             shutil.rmtree(tmp)
-            os.chdir(cwd)
 
     def download_orig(self, target):
         fname, headers = urlretrieve(self.orig)
