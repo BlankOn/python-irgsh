@@ -3,6 +3,7 @@ import os
 import shutil
 import tarfile
 import gzip
+import logging
 from subprocess import Popen, PIPE
 
 try:
@@ -29,6 +30,8 @@ class SourcePackageBuilder(object):
             raise ValueError, \
                   'A patch has to be accompanied with an orig file'
 
+        self.log = logging.getLogger('irgsh.source.packager')
+
     def build(self, target):
         '''Build source package.
 
@@ -43,6 +46,8 @@ class SourcePackageBuilder(object):
             source = '%s-%s' % (package, version)
 
             # Build
+            self.log.debug('Building source package')
+
             os.chdir(build_path)
             cmd = 'dpkg-source -b %s' % source
             p = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
@@ -60,11 +65,15 @@ class SourcePackageBuilder(object):
             src = Sources(open(dsc_path))
             files += [item['name'] for item in src['Files']]
 
+            self.log.debug('Moving source package files')
+
             for fname in files:
                 target_path = os.path.join(target, fname)
                 if os.path.exists(target_path):
                     os.unlink(target_path)
                 shutil.move(os.path.join(build_path, fname), target_path)
+
+            self.log.debug('Source package built: %s' % dsc)
 
             return dsc
 
@@ -75,6 +84,8 @@ class SourcePackageBuilder(object):
     def prepare_source(self, target):
         try:
             tmp = tempfile.mkdtemp('-irgsh-srcpkg-prepare')
+
+            self.log.debug('Preparing source code directory')
 
             # Download and extract source
             source_path = os.path.join(tmp, 'source')
@@ -101,7 +112,11 @@ class SourcePackageBuilder(object):
             # Get version information
             package, version = get_package_version(combined_path)
 
+            self.log.debug('Package: %s_%s' % (package, version))
+
             # Move source directory
+            self.log.debug('Moving source code directory')
+
             final_path = os.path.join(target, '%s-%s' % (package, version))
             shutil.move(combined_path, final_path)
 
@@ -128,6 +143,8 @@ class SourcePackageBuilder(object):
         return orig_path
 
     def download_source(self, target):
+        self.log.debug('Downloading source code, type: %s' % self.source_type)
+
         func = getattr(self, 'download_source_%s' % self.source_type)
         return func(target)
 
@@ -164,6 +181,8 @@ class SourcePackageBuilder(object):
         return target
 
     def extract_orig(self, orig, target):
+        self.log.debug('Extracting orig file')
+
         tar = tarfile.open(orig)
         tar.extractall(target)
         tar.close()
@@ -171,6 +190,8 @@ class SourcePackageBuilder(object):
         return self.find_orig_path(target)
 
     def combine(self, source, orig, target):
+        self.log.debug('Combining source and orig, type: %s' % self.source_type)
+
         func = getattr(self, 'combine_%s' % self.source_type)
         return func(source, orig, target)
 
