@@ -2,7 +2,7 @@ from .downloader import SourceDownloader
 from .packager import SourcePackageBuilder
 
 def prepare_source_package(target, source, source_type='tarball',
-                           source_opts=None):
+                           source_opts=None, orig=None):
     if source_opts is None:
         source_opts = {}
 
@@ -10,6 +10,6 @@ def prepare_source_package(target, source, source_type='tarball',
         downloader = SourceDownloader(source, source_opts.get('base', None))
         return downloader.download(target)
     else:
-        packager = SourcePackageBuilder(source, source_type, source_opts)
+        packager = SourcePackageBuilder(source, source_type, source_opts, orig)
         return packager.build(target)
 
