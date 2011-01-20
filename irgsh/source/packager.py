@@ -7,11 +7,11 @@ from subprocess import Popen, PIPE
 from urllib import urlretrieve
 
 try:
-    from debian.changelog import Changelog
     from debian.deb822 import Sources
 except ImportError:
-    from debian_bundle.changelog import Changelog
     from debian_bundle.deb822 import Sources
+
+from irgsh.utils import find_debian, get_package_version
 
 class SourcePackageBuilder(object):
     def __init__(self, source, source_type='tarball',
@@ -56,12 +56,12 @@ class SourcePackageBuilder(object):
             combined_path = self.combine(source, orig, combined_path)
 
             # Find combined source directory
-            source_path = self.find_debian(combined_path)
+            source_path = find_debian(combined_path)
             if source_path is None:
                 raise ValueError, 'Unable to find debian directory'
 
             # Get version information
-            package, version = self.get_package_info(source_path)
+            package, version = get_package_version(source_path)
 
             # Copy source directory
             build_path = os.path.join(tmp, 'build')
@@ -191,7 +191,7 @@ class SourcePackageBuilder(object):
         p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
         p.communicate()
 
-        return self.find_debian(orig_path)
+        return find_debian(orig_path)
 
     def combine_bzr(self, source, orig, target):
         return self.combine_tarball(source, orig, target)
@@ -207,38 +207,4 @@ class SourcePackageBuilder(object):
                 dirname = os.path.join(dirname, items[0])
 
         return dirname
-
-    def find_debian(self, dirname):
-        '''
-        Find debian directory
-        '''
-        # check for debian directory inside the given directory
-        debian = os.path.join(dirname, 'debian')
-        if os.path.exists(debian) and os.path.isdir(debian):
-            return dirname
-
-        # if it's not there, make sure we have exactly one directory inside
-        items = os.listdir(dirname)
-        if len(items) != 1:
-            return None
-        dirname = os.path.join(dirname, items[0])
-        if not os.path.isdir(dirname):
-            return None
-
-        # and inside it, there should be a debian directory
-        debian = os.path.join(dirname, 'debian')
-        if os.path.exists(debian) and os.path.isdir(debian):
-            return dirname
-
-        # if not, we found nothing
-        return None
-
-    def get_package_info(self, dirname):
-        changelog = os.path.join(dirname, 'debian', 'changelog')
-
-        ch = Changelog(open(changelog))
-        package = ch.package
-        version = str(ch.version).split(':')[-1]
-
-        return package, version
 
