@@ -3,32 +3,32 @@ import urllib
 import shutil
 import tempfile
 
-from .packages.source import SourcePackage
+from .source import prepare_source_package
 
 class Packager(object):
-    def __init__(self, specification, builder, resultdir,
+    def __init__(self, specification, builder,
                  stdout=None, stderr=None):
         self.specification = specification
         self.builder = builder
-        self.resultdir = resultdir
         self.stdout = stdout
         self.stderr = stderr
 
-    def build(self):
+    def build(self, target):
         '''Build package.
+        '''
 
-        This method will sequentially call export_source, retrieve_orig,
-        genereate_dsc, and build_package.
+        try:
+            tmp = tempfile.mkdtemp('-irgsh-builder')
+            dsc = self.prepare_source_package(tmp)
+            dsc_path = os.path.join(tmp, dsc)
 
-        To call those four methods individually, use the following.
+            self.build_package(dsc_path, target)
 
-            >>> dsc_dir = "/tmp/dsc/"
-            >>> source_dir = "/tmp/src/"
-            >>> self.export_source(source_dir)
-            >>> orig_path = self.retrieve_orig()
-            >>> dsc = self.generate_dsc(dsc_dir, source_dir, orig_path)
-            >>> dsc_path = os.path.join(dsc_dir, dsc)
-            >>> self.build_package(dsc_path)
+        finally:
+            shutil.rmtree(tmp)
+
+    def build(self, target):
+        '''Build package.
         '''
         try:
             target = tempfile.mkdtemp('-irgsh-builder')
@@ -41,49 +41,15 @@ class Packager(object):
         finally:
             shutil.rmtree(target)
 
-    def _generate_dsc(self, target):
-        try:
-            dirname = tempfile.mkdtemp('-irgsh-builder-source')
-            self.export_source(dirname)
+    def prepare_source_package(self, target):
+        spec = self.specification
+        return prepare_source_package(target, spec.location, spec.source_type,
+                                      spec.source_opts)
 
-            orig_path = self.retrieve_orig()
-
-            dsc = self.generate_dsc(target, dirname, orig_path)
-
-            if orig_path is not None:
-                os.remove(orig_path)
-
-            return dsc
-
-        finally:
-            shutil.rmtree(dirname)
-
-    def export_source(self, target):
-        '''Extract source file to the given target directory.
-        '''
-        source = self.specification.get_source()
-        source.export(target)
-
-    def retrieve_orig(self):
-        '''Download orig file, if available.
-        '''
-        orig = self.specification.orig
-        orig_path = None
-        if orig is not None:
-            orig_path, tmp = urllib.urlretrieve(orig)
-        return orig_path
-
-    def generate_dsc(self, target, source_dir, orig_path):
-        '''Generate dsc file from given source directory and path to the
-        orig file in the target directory.
-        '''
-        pkg = SourcePackage(source_dir, orig_path)
-        return pkg.generate_dsc(target)
-
-    def build_package(self, dsc_path):
+    def build_package(self, dsc_path, target)
         '''Build a package given its dsc file (fullpath).
         '''
-        return self.builder.build(dsc_path, self.resultdir, self.stdout, self.stderr)
+        return self.builder.build(dsc_path, target, self.stdout, self.stderr)
 
 def _test_run():
     from subprocess import Popen
