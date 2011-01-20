@@ -13,7 +13,7 @@ except ImportError:
     from debian_bundle.changelog import Changelog
     from debian_bundle.deb822 import Sources
 
-class SourcePackage(object):
+class SourcePackageBuilder(object):
     def __init__(self, source, source_type='tarball',
                  source_opts=None, orig=None):
         if source_opts is None:

@@ -1,2 +1,2 @@
-from .package import SourcePackage
+from .packager import SourcePackageBuilder
 
