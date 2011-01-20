@@ -1,5 +1,7 @@
-from subprocess import Popen, PIPE
+import urllib2
 import os
+import tempfile
+from subprocess import Popen, PIPE
 
 _architecture = None
 def get_architecture():
@@ -51,4 +53,15 @@ def get_package_version(dirname):
     version = str(ch.version).split(':')[-1]
 
     return package, version
+
+def retrieve(url):
+    ext = os.path.splitext(url)[1]
+    tmp = tempfile.mkstemp(ext)[1]
+
+    p = urllib2.urlopen(url)
+    f = open(tmp, 'wb')
+    f.write(p.read())
+    f.close()
+
+    return tmp
 
