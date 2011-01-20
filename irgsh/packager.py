@@ -6,14 +6,11 @@ import tempfile
 from .source import prepare_source_package
 
 class Packager(object):
-    def __init__(self, specification, builder,
-                 stdout=None, stderr=None):
+    def __init__(self, specification, builder):
         self.specification = specification
         self.builder = builder
-        self.stdout = stdout
-        self.stderr = stderr
 
-    def build(self, target):
+    def build(self, target, logger=None):
         '''Build package.
         '''
 
@@ -22,7 +19,7 @@ class Packager(object):
             dsc = self.prepare_source_package(tmp)
             dsc_path = os.path.join(tmp, dsc)
 
-            self.build_package(dsc_path, target)
+            self.build_package(dsc_path, target, logger)
 
         finally:
             shutil.rmtree(tmp)
@@ -32,8 +29,8 @@ class Packager(object):
         return prepare_source_package(target, spec.location, spec.source_type,
                                       spec.source_opts)
 
-    def build_package(self, dsc_path, target)
+    def build_package(self, dsc_path, target, logger=None)
         '''Build a package given its dsc file (fullpath).
         '''
-        return self.builder.build(dsc_path, target, self.stdout, self.stderr)
+        return self.builder.build(dsc_path, target, logger)
 
