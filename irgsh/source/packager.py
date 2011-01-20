@@ -11,6 +11,7 @@ except ImportError:
     from debian_bundle.deb822 import Sources
 
 from irgsh.utils import find_debian, get_package_version, retrieve
+from .error import SourcePackageBuildError, SourcePackagePreparationError
 
 class SourcePackageBuilder(object):
     def __init__(self, source, source_type='tarball',
@@ -46,6 +47,9 @@ class SourcePackageBuilder(object):
             cmd = 'dpkg-source -b %s' % source
             p = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
             out, err = p.communicate()
+
+            if p.returncode != 0:
+                raise SourcePackageBuildError(p.returncode, out, err)
 
             # Move result to the given target directory,
             # existing files will be replaced
@@ -109,6 +113,9 @@ class SourcePackageBuilder(object):
                 shutil.move(orig, orig_path)
 
             return package, version
+
+        except StandardError, e:
+            raise SourcePackagePreparationError(e)
 
         finally:
             shutil.rmtree(tmp)
