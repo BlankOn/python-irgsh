@@ -15,38 +15,20 @@ class BazaarExporter(object):
         self.log.debug('Exporting %s to %s' % (self.source, target))
 
         # Check branch
-        try:
-            remote = Branch.open(self.source)
-        except Exception, e:
-            raise ValueError, 'Invalid Bazaar repository: %s' % self.source
+        remote = Branch.open(self.source)
 
         # Get revision id
         revid = None
         if self.revision is not None:
-            try:
-                revid = remote.get_rev_id(self.revision)
-            except Exception, e:
-                raise ValueError, 'Invalid Bazaar revision: %s' % self.revision
-
+            revid = remote.get_rev_id(self.revision)
         elif self.tag is not None:
-            try:
-                revid = remote.tags.lookup_tag(self.tag)
-            except Exception, e:
-                raise ValueError, 'Invalid Bazaar tag: %s' % self.tag
-
+            revid = remote.tags.lookup_tag(self.tag)
         else:
             revid = remote.last_revision()
 
         # Get tree
-        try:
-            tree = remote.repository.revision_tree(revid)
-        except Exception, e:
-            raise ValueError, 'Unable to open Bazaar tree: %s (%s)' % \
-                              (str(e), revid)
+        tree = remote.repository.revision_tree(revid)
 
         # Export tree
-        try:
-            bzrlib.export.export(tree, target, None)
-        except Exception, e:
-            raise ValueError, 'Unable to export Bazaar tree: %s' % str(e)
+        bzrlib.export.export(tree, target, None)
 
