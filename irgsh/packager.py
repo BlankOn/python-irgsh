@@ -27,20 +27,6 @@ class Packager(object):
         finally:
             shutil.rmtree(tmp)
 
-    def build(self, target):
-        '''Build package.
-        '''
-        try:
-            target = tempfile.mkdtemp('-irgsh-builder')
-            dsc = self._generate_dsc(target)
-
-            dsc_path = os.path.join(target, dsc)
-            result = self.build_package(dsc_path)
-            return result
-
-        finally:
-            shutil.rmtree(target)
-
     def prepare_source_package(self, target):
         spec = self.specification
         return prepare_source_package(target, spec.location, spec.source_type,
