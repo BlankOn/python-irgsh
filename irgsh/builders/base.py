@@ -21,7 +21,7 @@ class BaseBuilder(object):
             self._architecture = get_architecture()
         return self._architecture
 
-    def build(self, dsc, resultdir, stdout=None, stderr=None):
+    def build(self, dsc, resultdir, logger=None):
         '''
         Build package given its dsc file.
 

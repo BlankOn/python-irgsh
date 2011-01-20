@@ -1,6 +1,6 @@
 import logging
 import os
-from subprocess import Popen
+from subprocess import Popen, STDOUT
 try:
     import simplejson as json
 except ImportError:
@@ -78,35 +78,35 @@ class Pbuilder(BaseBuilder):
 
         self.init()
 
-    def create(self, stdout=None, stderr=None):
+    def create(self, logger=None):
         self.log.debug('Creating base.tgz')
 
         # TODO: check if pbuilder.conf exists
         cmd = 'sudo pbuilder --create --configfile %s' % self.configfile
 
-        p = Popen(cmd.split(), stdout=stdout, stderr=stderr)
+        p = Popen(cmd.split(), stdout=logger, stderr=STDOUT)
         p.communicate()
 
         return p.returncode
 
-    def update(self, stdout=None, stderr=None):
+    def update(self, logger=None):
         self.log.debug('Updating base.tgz')
 
         # TODO: check if pbuilder.conf exists
         cmd = 'sudo pbuilder --update --configfile %s' % self.configfile
 
-        p = Popen(cmd.split(), stdout=stdout, stderr=stderr)
+        p = Popen(cmd.split(), stdout=logger, stderr=STDOUT)
         p.communicate()
 
         return p.returncode
 
-    def build(self, dsc, resultdir, stdout=None, stderr=None):
+    def build(self, dsc, resultdir, logger=None):
         self.log.debug('Building %s to %s' % (dsc, resultdir))
 
         # Check if base.tgz exists, if not initialize the builder
         if not os.path.exists(os.path.join(self.path, 'base.tgz')):
             self.init()
-            self.create(stdout, stderr)
+            self.create(logger)
 
             # TODO
             # - add file locking so other process won't try to
@@ -122,7 +122,7 @@ class Pbuilder(BaseBuilder):
         cmds.append(dsc)
 
         cmd = ' '.join(cmds)
-        p = Popen(cmd.split(), stdout=stdout, stderr=stderr)
+        p = Popen(cmd.split(), stdout=logger, stderr=STDOUT)
         p.communicate()
 
         if p.returncode != 0:
