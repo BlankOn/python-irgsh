@@ -1,4 +1,4 @@
-class IrgshException(Exception):
+class IrgshException(StandardError):
     pass
 
 class BuildFailedError(IrgshException):
