@@ -46,7 +46,7 @@ class SourcePackageBuilder(object):
             source = '%s-%s' % (package, version)
 
             # Build
-            self.log.debug('Building source package')
+            self.log.debug('Building source package: source=%s type=%s opts=%s orig=%s' % (self.source, self.source_type, self.source_opts, self.orig))
 
             os.chdir(build_path)
             cmd = 'dpkg-source -b %s' % source
@@ -65,7 +65,7 @@ class SourcePackageBuilder(object):
             src = Sources(open(dsc_path))
             files += [item['name'] for item in src['Files']]
 
-            self.log.debug('Moving source package files')
+            self.log.debug('Moving source package files: %s' % ', '.join(files))
 
             for fname in files:
                 target_path = os.path.join(target, fname)
