@@ -12,6 +12,8 @@ class SourcePackagePreparationError(SourcePackageBuilderException):
         if isinstance(self.msg, urllib2.HTTPError):
             msg = 'Download error (code: %s): %s' % \
                   (self.msg.code, self.msg.geturl())
+        elif isinstance(self.msg, Exception):
+            msg = '%s: %s' % (type(self.msg), str(self.msg))
         else:
             msg = str(self.msg)
 
