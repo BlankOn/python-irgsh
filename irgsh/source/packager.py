@@ -4,14 +4,13 @@ import shutil
 import tarfile
 import gzip
 from subprocess import Popen, PIPE
-from urllib import urlretrieve
 
 try:
     from debian.deb822 import Sources
 except ImportError:
     from debian_bundle.deb822 import Sources
 
-from irgsh.utils import find_debian, get_package_version
+from irgsh.utils import find_debian, get_package_version, retrieve
 
 class SourcePackageBuilder(object):
     def __init__(self, source, source_type='tarball',
@@ -115,7 +114,7 @@ class SourcePackageBuilder(object):
             shutil.rmtree(tmp)
 
     def download_orig(self, target):
-        fname, headers = urlretrieve(self.orig)
+        fname = retrieve(self.orig)
         orig_name = os.path.basename(self.orig)
         orig_path = os.path.join(target, orig_name)
         shutil.move(fname, orig_path)
@@ -126,7 +125,7 @@ class SourcePackageBuilder(object):
         return func(target)
 
     def download_source_patch(self, target):
-        fname, headers = urlretrieve(self.source)
+        fname = retrieve(self.source)
         patch_name = os.path.basename(self.source)
         patch_path = os.path.join(target, patch_name)
         shutil.move(fname, patch_path)
@@ -136,7 +135,8 @@ class SourcePackageBuilder(object):
         try:
             tmp = tempfile.mkdtemp('-irgsh-tarball')
 
-            tmpname, headers = urlretrieve(self.source)
+            tmpname = retrieve(self.source)
+
             source_name = os.path.basename(self.source)
             source_path = os.path.join(tmp, source_name)
             shutil.move(tmpname, source_path)
