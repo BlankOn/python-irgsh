@@ -170,6 +170,9 @@ class SourcePackageBuilder(object):
             tar.close()
 
             return target
+        except tarfile.ReadError, e:
+            raise StandardError(e)
+
         finally:
             shutil.rmtree(tmp)
 
