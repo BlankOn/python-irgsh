@@ -2,12 +2,13 @@ Source: python-irgsh
 Section: python
 Priority: optional
 Maintainer: BlankOn Developers <blankon-dev@googlegroups.com>
-Build-Depends: debhelper (>= 5.0.37.2), python, python-setuptools
-Build-Depends-Indep: python-support (>= 0.3)
+Build-Depends: debhelper (>= 5.0.37.2), python (>= 2.5), python-setuptools
 
 Package: python-irgsh
 Architecture: all
-Depends: ${python:Depends}, python-debian, bzr, pbuilder, dput, blankon-builder-configurations
-Description: Python modules of irgsh
- .
+Depends: ${python:Depends}, python-debian
+Recommends: bzr, pbuilder, dput
+Suggests: python-simplejson
+Description: Irgsh Python Library
+ This package contains common libraries for Irgsh tools.
 
