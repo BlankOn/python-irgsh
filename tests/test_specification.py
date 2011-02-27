@@ -24,11 +24,3 @@ class SourceTestCase(TestCase):
         self.assertEqual(self.spec.source_type, 'bzr')
         self.assertEqual(self.spec.source_opts, {'tag': '0.7.100ubuntu2+blankon1.2'})
 
-    def testSource(self):
-        from irgsh.sources.bzr import BZR
-
-        source = self.spec.get_source()
-
-        self.assertTrue(isinstance(source, BZR))
-        self.assertEqual(source.location, self.spec.location)
-
