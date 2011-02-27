@@ -19,6 +19,10 @@ def find_debian(dirname):
     '''
     Find debian directory
     '''
+    # check directory existance
+    if not os.path.exists(dirname):
+        return None
+
     # check for debian directory inside the given directory
     debian = os.path.join(dirname, 'debian')
     if os.path.exists(debian) and os.path.isdir(debian):
