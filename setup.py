@@ -6,8 +6,7 @@ def get_version():
     import irgsh
     return irgsh.__version__
 
-packages = ['irgsh', 'irgsh.builders', 'irgsh.packages', 'irgsh.sources',
-            'irgsh.uploaders']
+packages = ['irgsh', 'irgsh.builders', 'irgsh.source', 'irgsh.uploaders']
 
 setup(name='irgsh', 
       version=get_version(),
