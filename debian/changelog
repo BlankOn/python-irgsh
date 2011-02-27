@@ -1,3 +1,9 @@
+python-irgsh (0.5) lucid; urgency=low
+
+  * Next generation of IRGSH
+
+ -- Fajran Iman Rusadi <fajran@gmail.com>  Sun, 27 Feb 2011 22:27:19 +0100
+
 python-irgsh (0.1) ombilin; urgency=low
 
   * Initial release. 
