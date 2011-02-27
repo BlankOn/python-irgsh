@@ -4,7 +4,7 @@ __all__ = ['DistributionTestCase']
 
 class DistributionTestCase(TestCase):
     def testDefault(self):
-        from irgsh.distribution import Distribution
+        from irgsh.data import Distribution
         dist = Distribution('lucid', 'http://archive.ubuntu.com/ubuntu/',
                             'lucid')
 
@@ -16,7 +16,7 @@ class DistributionTestCase(TestCase):
         self.assertEqual(dist.extra, [])
 
     def testComplete(self):
-        from irgsh.distribution import Distribution
+        from irgsh.data import Distribution
         dist = Distribution('lucid', 'http://archive.ubuntu.com/ubuntu/',
                             'lucid', ['main', 'restricted'],
                             ['deb http://archive.ubuntu.com/ubuntu/ lucid-updates main restricted',
