@@ -10,7 +10,7 @@ packages = ['irgsh', 'irgsh.builders', 'irgsh.source', 'irgsh.uploaders']
 
 setup(name='python-irgsh',
       version=get_version(),
-      description='Python interface to irgsh',
+      description='Irgsh Python Library',
       url='http://irgsh.blankonlinux.or.id',
       packages=packages,
       maintainer='BlankOn Developers',
