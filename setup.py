@@ -8,7 +8,7 @@ def get_version():
 
 packages = ['irgsh', 'irgsh.builders', 'irgsh.source', 'irgsh.uploaders']
 
-setup(name='irgsh', 
+setup(name='python-irgsh',
       version=get_version(),
       description='Python interface to irgsh',
       url='http://irgsh.blankonlinux.or.id',
