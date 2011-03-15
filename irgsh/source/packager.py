@@ -73,6 +73,7 @@ class SourcePackageBuilder(object):
                 if os.path.exists(target_path):
                     os.unlink(target_path)
                 shutil.move(os.path.join(build_path, fname), target_path)
+                os.chmod(target_path, 0644)
 
             self.log.debug('Source package built: %s' % dsc)
 
