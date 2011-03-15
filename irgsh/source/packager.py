@@ -63,6 +63,7 @@ class SourcePackageBuilder(object):
 
             dsc_path = os.path.join(build_path, dsc)
             src = Sources(open(dsc_path))
+            assert 'Files' in src, 'Invalid source package'
             files += [item['name'] for item in src['Files']]
 
             self.log.debug('Moving source package files: %s' % ', '.join(files))
