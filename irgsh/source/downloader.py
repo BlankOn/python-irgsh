@@ -1,5 +1,6 @@
 import os
 import shutil
+import logging
 from urllib import urlretrieve
 
 try:
@@ -15,11 +16,14 @@ class SourceDownloader(object):
             base = os.path.dirname(source)
         self.base = base
 
+        self.log = logging.getLogger('irgsh.source')
+
     def download(self, target):
         dsc = os.path.basename(self.source)
         dsc_path = os.path.join(target, dsc)
 
         # Download .dsc file
+        self.log.debug('Downloading dsc file: %s' % self.source)
         tmp, headers = urlretrieve(self.source)
         shutil.move(tmp, dsc_path)
 
@@ -29,6 +33,7 @@ class SourceDownloader(object):
 
         for fname in files:
             url = os.path.join(self.base, fname)
+            self.log.debug('Downloading source file: %s' % url)
             tmp, headers = urlretrieve(url)
 
             path = os.path.join(target, fname)

@@ -69,6 +69,8 @@ class Pbuilder(BaseBuilder):
             f.close()
 
     def reinit(self):
+        self.log.debug('Resetting pbuilder')
+
         fname = os.path.join(self.path, 'distribution.json')
         if os.path.exists(fname):
             os.unlink(fname)
