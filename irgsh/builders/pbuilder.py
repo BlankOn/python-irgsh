@@ -86,7 +86,8 @@ class Pbuilder(BaseBuilder):
         # TODO: check if pbuilder.conf exists
         cmd = 'sudo pbuilder --create --configfile %s' % self.configfile
 
-        p = Popen(cmd.split(), stdout=logger, stderr=STDOUT)
+        p = Popen(cmd.split(), stdout=logger, stderr=STDOUT,
+                  preexec_fn=os.setsid)
         p.communicate()
 
         return p.returncode
@@ -97,7 +98,8 @@ class Pbuilder(BaseBuilder):
         # TODO: check if pbuilder.conf exists
         cmd = 'sudo pbuilder --update --configfile %s' % self.configfile
 
-        p = Popen(cmd.split(), stdout=logger, stderr=STDOUT)
+        p = Popen(cmd.split(), stdout=logger, stderr=STDOUT,
+                  preexec_fn=os.setsid)
         p.communicate()
 
         return p.returncode
@@ -124,7 +126,8 @@ class Pbuilder(BaseBuilder):
         cmds.append(dsc)
 
         cmd = ' '.join(cmds)
-        p = Popen(cmd.split(), stdout=logger, stderr=STDOUT)
+        p = Popen(cmd.split(), stdout=logger, stderr=STDOUT,
+                  preexec_fn=os.setsid)
         p.communicate()
 
         if p.returncode != 0:

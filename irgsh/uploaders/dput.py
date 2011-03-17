@@ -44,7 +44,8 @@ class Dput(BaseUploader):
             self._create_config(config)
 
             cmd = 'dput -c %s %s' % (config, changes)
-            p = Popen(cmd.split(), stdout=stdout, stderr=stderr)
+            p = Popen(cmd.split(), stdout=stdout, stderr=stderr,
+                      preexec_fn=os.setsid)
             p.communicate()
 
             if p.returncode != 0:

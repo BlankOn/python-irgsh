@@ -50,7 +50,8 @@ class SourcePackageBuilder(object):
 
             os.chdir(build_path)
             cmd = 'dpkg-source -b %s' % source
-            p = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+            p = Popen(cmd.split(), stdout=PIPE, stderr=PIPE,
+                      preexec_fn=os.setsid)
             out, err = p.communicate()
 
             if p.returncode != 0:
@@ -214,7 +215,8 @@ class SourcePackageBuilder(object):
 
             os.chdir(orig_path)
             cmd = 'patch -p1'
-            p = Popen(cmd.split(), stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            p = Popen(cmd.split(), stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                      preexec_fn=os.setsid)
             p.stdin.write(patch.read())
             p.communicate()
 
@@ -235,7 +237,8 @@ class SourcePackageBuilder(object):
 
         # Copy all files inside source
         cmd = 'cp -a %s/* %s/' % (source.rstrip('/'), orig_path.rstrip('/'))
-        p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+        p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE,
+                  preexec_fn=os.setsid)
         p.communicate()
 
         return find_debian(orig_path)
