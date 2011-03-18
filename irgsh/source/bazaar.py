@@ -25,7 +25,7 @@ class BazaarExporter(object):
             revinfo = 'rev: %s' % self.revision
         elif self.tag is not None:
             revid = remote.tags.lookup_tag(self.tag)
-            revinfo = 'tag: %' % self.tag
+            revinfo = 'tag: %s' % self.tag
         else:
             revid = remote.last_revision()
             revinfo = 'last'
