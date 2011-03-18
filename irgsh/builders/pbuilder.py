@@ -112,6 +112,9 @@ class Pbuilder(BaseBuilder):
             self.init()
             self.create(logger)
 
+        else:
+            self.update(logger)
+
             # TODO
             # - add file locking so other process won't try to
             #   initialize the builder again
