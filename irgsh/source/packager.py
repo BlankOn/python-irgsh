@@ -93,19 +93,25 @@ class SourcePackageBuilder(object):
             # Download and extract source
             source_path = os.path.join(tmp, 'source')
             os.makedirs(source_path)
+            self.log.debug('Downloading source code, type: %s' % self.source_type)
             source = self.download_source(source_path)
+            self.log.debug('Source code downloaded')
 
             # Download orig
             orig = None
             orig_path = os.path.join(tmp, 'orig')
             os.makedirs(orig_path)
             if self.orig is not None:
+                self.log.debug('Downloading original file')
                 orig = self.download_orig(orig_path)
+                self.log.debug('Original file downloaded')
 
             # Combine source and orig
             combined_path = os.path.join(tmp, 'combine')
             os.makedirs(combined_path)
+            self.log.debug('Combining source and orig, type: %s' % self.source_type)
             combined_path = self.combine(source, orig, combined_path)
+            self.log.debug('Source and orig combined')
 
             # Check for debian directory
             combined_path = find_debian(combined_path)
@@ -146,8 +152,6 @@ class SourcePackageBuilder(object):
         return orig_path
 
     def download_source(self, target):
-        self.log.debug('Downloading source code, type: %s' % self.source_type)
-
         func = getattr(self, 'download_source_%s' % self.source_type)
         return func(target)
 
@@ -196,8 +200,6 @@ class SourcePackageBuilder(object):
         return self.find_orig_path(target)
 
     def combine(self, source, orig, target):
-        self.log.debug('Combining source and orig, type: %s' % self.source_type)
-
         func = getattr(self, 'combine_%s' % self.source_type)
         return func(source, orig, target)
 
