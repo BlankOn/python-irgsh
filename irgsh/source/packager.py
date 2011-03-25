@@ -152,8 +152,13 @@ class SourcePackageBuilder(object):
         return orig_path
 
     def download_source(self, target):
-        func = getattr(self, 'download_source_%s' % self.source_type)
-        return func(target)
+        try:
+            self.log.debug('Downloading source code (type: %s): %s' % \
+                           (self.source_type, self.source))
+            func = getattr(self, 'download_source_%s' % self.source_type)
+            return func(target)
+        finally:
+            self.log.debug('Source code downloaded' % self.source_type)
 
     def download_source_patch(self, target):
         fname = retrieve(self.source)
@@ -200,11 +205,16 @@ class SourcePackageBuilder(object):
         return self.find_orig_path(target)
 
     def combine(self, source, orig, target):
-        func = getattr(self, 'combine_%s' % self.source_type)
-        return func(source, orig, target)
+        try:
+            self.log.debug('Combining source and orig, type: %s' % self.source_type)
+            func = getattr(self, 'combine_%s' % self.source_type)
+            return func(source, orig, target)
+        finally:
+            self.log.debug('Source and orig combined')
 
     def combine_patch(self, source, orig, target):
-        assert orig is not None
+        assert orig is not None, \
+               'A patch has to be accompanied with an orig file'
 
         # Extract orig
         orig_path = self.extract_orig(orig, os.path.join(target, 'build'))
@@ -222,7 +232,7 @@ class SourcePackageBuilder(object):
             p.stdin.write(patch.read())
             p.communicate()
 
-            assert p.returncode == 0
+            assert p.returncode == 0, 'Patch application failed'
 
             return orig_path
         finally:

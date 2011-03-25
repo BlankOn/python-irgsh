@@ -39,5 +39,7 @@ class SourceDownloader(object):
             path = os.path.join(target, fname)
             shutil.move(tmp, path)
 
+        self.log.debug('All files downloaded')
+
         return dsc
 
