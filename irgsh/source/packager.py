@@ -64,7 +64,8 @@ class SourcePackageBuilder(object):
 
             dsc_path = os.path.join(build_path, dsc)
             src = Sources(open(dsc_path))
-            assert 'Files' in src, 'Invalid source package'
+            if not src.has_key('Files'):
+                raise KeyError, 'Invalid source package'
             files += [item['name'] for item in src['Files']]
 
             self.log.debug('Moving source package files: %s' % ', '.join(files))
@@ -213,8 +214,8 @@ class SourcePackageBuilder(object):
             self.log.debug('Source and orig combined')
 
     def combine_patch(self, source, orig, target):
-        assert orig is not None, \
-               'A patch has to be accompanied with an orig file'
+        if orig is None:
+            raise ValueError, 'A patch has to be accompanied with an orig file'
 
         # Extract orig
         orig_path = self.extract_orig(orig, os.path.join(target, 'build'))
@@ -232,7 +233,8 @@ class SourcePackageBuilder(object):
             p.stdin.write(patch.read())
             p.communicate()
 
-            assert p.returncode == 0, 'Patch application failed'
+            if p.returncode != 0:
+                raise ValueError, 'Patch application failed'
 
             return orig_path
         finally:
