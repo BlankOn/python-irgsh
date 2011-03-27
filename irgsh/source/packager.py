@@ -251,6 +251,9 @@ class SourcePackageBuilder(object):
                 if os.path.exists(subdir) and os.path.isdir(subdir):
                     extra = subdir
 
+                if os.path.exists(os.path.join(target, component)):
+                    shutil.rmtree(os.path.join(target, component))
+
                 shutil.move(extra, target)
 
             finally:
