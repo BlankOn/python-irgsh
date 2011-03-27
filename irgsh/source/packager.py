@@ -153,13 +153,8 @@ class SourcePackageBuilder(object):
         return orig_path
 
     def download_source(self, target):
-        try:
-            self.log.debug('Downloading source code (type: %s): %s' % \
-                           (self.source_type, self.source))
-            func = getattr(self, 'download_source_%s' % self.source_type)
-            return func(target)
-        finally:
-            self.log.debug('Source code downloaded' % self.source_type)
+        func = getattr(self, 'download_source_%s' % self.source_type)
+        return func(target)
 
     def download_source_patch(self, target):
         fname = retrieve(self.source)
@@ -205,13 +200,10 @@ class SourcePackageBuilder(object):
 
         return self.find_orig_path(target)
 
-    def combine(self, source, orig, target):
-        try:
-            self.log.debug('Combining source and orig, type: %s' % self.source_type)
-            func = getattr(self, 'combine_%s' % self.source_type)
-            return func(source, orig, target)
-        finally:
-            self.log.debug('Source and orig combined')
+    def combine(self, source, orig, extra_orig, target):
+        self.log.debug('Combining source and orig, type: %s' % self.source_type)
+        func = getattr(self, 'combine_%s' % self.source_type)
+        return func(source, orig, extra_orig, target)
 
     def combine_patch(self, source, orig, target):
         if orig is None:
