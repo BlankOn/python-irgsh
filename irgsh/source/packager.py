@@ -240,15 +240,19 @@ class SourcePackageBuilder(object):
 
             try:
                 tmp = tempfile.mkdtemp('-extra-orig')
+                extra = os.path.join(tmp, component)
+                os.makedirs(extra)
+
                 tar = tarfile.open(orig)
-                tar.extractall(tmp)
+                tar.extractall(extra)
                 tar.close()
 
-                if not os.path.exists(os.path.join(tmp, component)):
-                    raise ValueError, 'Directory %s is not found inside %s' % \
-                                      (component, fname)
+                subdir = os.path.join(extra, component)
+                if os.path.exists(subdir) and os.path.isdir(subdir):
+                    extra = subdir
 
-                shutil.move(os.path.join(tmp, component), target)
+                shutil.move(extra, target)
+
             finally:
                 shutil.rmtree(tmp)
 
