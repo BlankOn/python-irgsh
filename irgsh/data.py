@@ -18,17 +18,16 @@ class Distribution(object):
 
 class Specification(object):
     def __init__(self, source, source_type='tarball', source_opts=None,
-                 orig=None):
+                 orig=None, extra_orig=None):
         self.source = source
         self.source_type = source_type
-
-        self.orig = None
-        if type(orig) in [str, unicode]:
-            orig = str(orig).strip()
-            if len(orig) > 0:
-                self.orig = orig
+        self.orig = orig
 
         self.source_opts = {}
         if source_opts is not None:
             self.source_opts = source_opts
+
+        if orig is None or extra_orig is None:
+            extra_orig = []
+        self.extra_orig = extra_orig
 

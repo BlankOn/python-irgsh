@@ -4,6 +4,7 @@ import shutil
 import tarfile
 import gzip
 import logging
+import re
 from subprocess import Popen, PIPE
 
 try:
@@ -14,15 +15,20 @@ except ImportError:
 from irgsh.utils import find_debian, get_package_version, retrieve
 from .error import SourcePackageBuildError, SourcePackagePreparationError
 
+re_extra_orig = re.compile(r'.+\.orig-([a-z0-9-]+)\.tar')
+
 class SourcePackageBuilder(object):
     def __init__(self, source, source_type='tarball',
-                 source_opts=None, orig=None):
+                 source_opts=None, orig=None, extra_orig=None):
         if source_opts is None:
             source_opts = {}
         self.source = source
         self.source_type = source_type
         self.source_opts = source_opts
         self.orig = orig
+        if orig is None or extra_orig is None:
+            extra_orig = []
+        self.extra_orig = extra_orig
 
         if not source_type in ['patch', 'tarball', 'bzr']:
             raise ValueError, 'Unsupported source type: %s' % source_type
@@ -46,7 +52,10 @@ class SourcePackageBuilder(object):
             source = '%s-%s' % (package, version)
 
             # Build
-            self.log.debug('Building source package: source=%s type=%s opts=%s orig=%s' % (self.source, self.source_type, self.source_opts, self.orig))
+            self.log.debug('Building source package: ' \
+                           'source=%s type=%s opts=%s orig=%s extra_orig=%s' % \
+                           (self.source, self.source_type, \
+                            self.source_opts, self.orig, self.extra_orig))
 
             os.chdir(build_path)
             cmd = 'dpkg-source -b %s' % source
@@ -107,11 +116,18 @@ class SourcePackageBuilder(object):
                 orig = self.download_orig(orig_path)
                 self.log.debug('Original file downloaded')
 
-            # Combine source and orig
+            # Download additional orig
+            extra_orig = []
+            if len(self.extra_orig) > 0:
+                self.log.debug('Downloading additional original files')
+                extra_orig = self.download_extra_orig(orig_path)
+                self.log.debug('additional original files downloaded')
+
+            # Combine source and orig(s)
             combined_path = os.path.join(tmp, 'combine')
             os.makedirs(combined_path)
             self.log.debug('Combining source and orig, type: %s' % self.source_type)
-            combined_path = self.combine(source, orig, combined_path)
+            combined_path = self.combine(source, orig, extra_orig, combined_path)
             self.log.debug('Source and orig combined')
 
             # Check for debian directory
@@ -137,6 +153,10 @@ class SourcePackageBuilder(object):
                                                   (package, upstream))
                 shutil.move(orig, orig_path)
 
+            # Move additional orig files
+            for orig in extra_orig:
+                shutil.move(orig, target)
+
             return package, version
 
         except StandardError, e:
@@ -151,6 +171,16 @@ class SourcePackageBuilder(object):
         orig_path = os.path.join(target, orig_name)
         shutil.move(fname, orig_path)
         return orig_path
+
+    def download_extra_orig(self, target):
+        items = []
+        for url in self.extra_orig:
+            fname = retrieve(url)
+            orig_name = os.path.basename(url)
+            orig_path = os.path.join(target, orig_name)
+            shutil.move(fname, orig_path)
+            items.append(orig_path)
+        return items
 
     def download_source(self, target):
         func = getattr(self, 'download_source_%s' % self.source_type)
@@ -200,17 +230,40 @@ class SourcePackageBuilder(object):
 
         return self.find_orig_path(target)
 
+    def extract_extra_orig(self, extra_orig, target):
+        self.log.debug('Extracting additional orig files')
+
+        for orig in extra_orig:
+            fname = os.path.basename(orig)
+            m = re_extra_orig.match(fname)
+            component = m.groups()[0]
+
+            try:
+                tmp = tempfile.mkdtemp('-extra-orig')
+                tar = tarfile.open(orig)
+                tar.extractall(tmp)
+                tar.close()
+
+                if not os.path.exists(os.path.join(tmp, component)):
+                    raise ValueError, 'Directory %s is not found inside %s' % \
+                                      (component, fname)
+
+                shutil.move(os.path.join(tmp, component), target)
+            finally:
+                shutil.rmtree(tmp)
+
     def combine(self, source, orig, extra_orig, target):
         self.log.debug('Combining source and orig, type: %s' % self.source_type)
         func = getattr(self, 'combine_%s' % self.source_type)
         return func(source, orig, extra_orig, target)
 
-    def combine_patch(self, source, orig, target):
+    def combine_patch(self, source, orig, extra_orig, target):
         if orig is None:
             raise ValueError, 'A patch has to be accompanied with an orig file'
 
         # Extract orig
         orig_path = self.extract_orig(orig, os.path.join(target, 'build'))
+        self.extract_extra_orig(extra_orig, orig_path)
 
         # Apply patch
         try:
@@ -232,14 +285,19 @@ class SourcePackageBuilder(object):
         finally:
             os.chdir(cwd)
 
-    def combine_tarball(self, source, orig, target):
+    def combine_tarball(self, source, orig, extra_orig, target):
         if orig is not None:
-            return self.combine_tarball_orig(source, orig, target)
+            return self.combine_tarball_orig(source, orig, extra_orig, target)
         return source
 
-    def combine_tarball_orig(self, source, orig, target):
+    def combine_tarball_orig(self, source, orig, extra_orig, target):
         # Extract orig
         orig_path = self.extract_orig(orig, target)
+        self.extract_extra_orig(extra_orig, orig_path)
+
+        # Remove existing debian directory
+        if os.path.exists(os.path.join(orig_path, 'debian')):
+            shutil.rmtree(os.path.join(orig_path, 'debian'))
 
         # Copy all files inside source
         cmd = 'cp -a %s/* %s/' % (source.rstrip('/'), orig_path.rstrip('/'))
@@ -249,8 +307,8 @@ class SourcePackageBuilder(object):
 
         return find_debian(orig_path)
 
-    def combine_bzr(self, source, orig, target):
-        return self.combine_tarball(source, orig, target)
+    def combine_bzr(self, source, orig, extra_orig, target):
+        return self.combine_tarball(source, orig, extra_orig, target)
 
     def find_orig_path(self, dirname):
         # Find the correct orig directory
