@@ -15,6 +15,7 @@ class Pbuilder(BaseBuilder):
         self.pbuilder_path = os.path.abspath(pbuilder_path)
         self.path = os.path.join(self.pbuilder_path, self.distribution.name)
         self.configfile = os.path.join(self.path, 'pbuilder.conf')
+        self.keyring = opts['keyring']
 
         self.log = logging.getLogger('irgsh.builders.pbuilder')
 
@@ -85,7 +86,8 @@ class Pbuilder(BaseBuilder):
 
         # TODO: check if pbuilder.conf exists
         cmd = ['sudo', 'pbuilder', '--create',
-               '--configfile', self.configfile]
+               '--configfile', self.configfile,
+               '--debootstrapopts', '--keyring=%s' % self.keyring]
 
         p = Popen(cmd, stdout=logger, stderr=STDOUT,
                   preexec_fn=os.setsid)
@@ -98,7 +100,8 @@ class Pbuilder(BaseBuilder):
 
         # TODO: check if pbuilder.conf exists
         cmd = ['sudo', 'pbuilder', '--update',
-               '--configfile', self.configfile]
+               '--configfile', self.configfile,
+               '--debootstrapopts', '--keyring=%s' % self.keyring]
 
         p = Popen(cmd, stdout=logger, stderr=STDOUT,
                   preexec_fn=os.setsid)
@@ -127,6 +130,7 @@ class Pbuilder(BaseBuilder):
         cmd = ['sudo', 'pbuilder', '--build',
                '--configfile', self.configfile,
                '--buildresult', resultdir,
+               '--debootstrapopts', '--keyring=%s' % self.keyring,
                dsc]
 
         p = Popen(cmd, stdout=logger, stderr=STDOUT,
