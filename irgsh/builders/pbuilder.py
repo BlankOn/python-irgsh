@@ -84,9 +84,10 @@ class Pbuilder(BaseBuilder):
         self.log.debug('Creating base.tgz')
 
         # TODO: check if pbuilder.conf exists
-        cmd = 'sudo pbuilder --create --configfile %s' % self.configfile
+        cmd = ['sudo', 'pbuilder', '--create',
+               '--configfile', self.configfile]
 
-        p = Popen(cmd.split(), stdout=logger, stderr=STDOUT,
+        p = Popen(cmd, stdout=logger, stderr=STDOUT,
                   preexec_fn=os.setsid)
         p.communicate()
 
@@ -96,9 +97,10 @@ class Pbuilder(BaseBuilder):
         self.log.debug('Updating base.tgz')
 
         # TODO: check if pbuilder.conf exists
-        cmd = 'sudo pbuilder --update --configfile %s' % self.configfile
+        cmd = ['sudo', 'pbuilder', '--update',
+               '--configfile', self.configfile]
 
-        p = Popen(cmd.split(), stdout=logger, stderr=STDOUT,
+        p = Popen(cmd, stdout=logger, stderr=STDOUT,
                   preexec_fn=os.setsid)
         p.communicate()
 
@@ -122,14 +124,12 @@ class Pbuilder(BaseBuilder):
             #   can be checked
 
         # TODO: check if pbuilder.conf exists
-        cmds = []
-        cmds.append('sudo pbuilder --build')
-        cmds.append('--configfile %s' % self.configfile)
-        cmds.append('--buildresult %s' % resultdir)
-        cmds.append(dsc)
+        cmd = ['sudo', 'pbuilder', '--build',
+               '--configfile', self.configfile,
+               '--buildresult', resultdir,
+               dsc]
 
-        cmd = ' '.join(cmds)
-        p = Popen(cmd.split(), stdout=logger, stderr=STDOUT,
+        p = Popen(cmd, stdout=logger, stderr=STDOUT,
                   preexec_fn=os.setsid)
         p.communicate()
 
