@@ -156,7 +156,7 @@ class SourcePackageBuilder(object):
                 upstream = version.split('-')[0]
                 fname, ext = os.path.splitext(self.orig)
                 orig_path = os.path.join(target, '%s_%s.orig.tar%s' % \
-                                                 (package, version, ext))
+                                                 (package, upstream, ext))
                 shutil.move(orig, orig_path)
 
             # Move additional orig files
