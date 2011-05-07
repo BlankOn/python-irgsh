@@ -53,13 +53,21 @@ class SourcePackageBuilder(object):
             source = '%s-%s' % (package, version)
             self.slog(logger)
 
+            os.chdir(build_path)
+
+            self.slog(logger, '# File listing')
+            cmd = 'find -ls'
+            p = Popen(cmd.split(), stdout=logger, stderr=STDOUT,
+                      preexec_fn=os.setsid)
+            out, err = p.communicate()
+            self.slog(logger)
+
             # Build
             self.log.debug('Building source package: ' \
                            'source=%s type=%s opts=%s orig=%s extra_orig=%s' % \
                            (self.source, self.source_type, \
                             self.source_opts, self.orig, self.extra_orig))
 
-            os.chdir(build_path)
             self.slog(logger, '# Building source package')
             cmd = 'dpkg-source -b %s' % source
             self.slog(logger, '# Command:', cmd)
