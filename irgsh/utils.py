@@ -54,15 +54,7 @@ def get_package_version(dirname):
 
     ch = Changelog(open(changelog))
     package = ch.package
-
-    # Remove epoch
     version = str(ch.version).split(':')[-1]
-
-    # Remove debian version
-    p = version.split('-')
-    if len(p) > 1:
-        p = p[:-1]
-    version = '-'.join(p)
 
     return package, version
 
