@@ -154,8 +154,9 @@ class SourcePackageBuilder(object):
             # Move and rename orig file, if available
             if orig is not None:
                 upstream = version.split('-')[0]
-                orig_path = os.path.join(target, '%s_%s.orig.tar.gz' % \
-                                                  (package, upstream))
+                fname, ext = os.path.splitext(self.orig)
+                orig_path = os.path.join(target, '%s_%s.orig.tar.%s' % \
+                                                 (package, version, ext))
                 shutil.move(orig, orig_path)
 
             # Move additional orig files
