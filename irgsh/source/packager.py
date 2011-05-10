@@ -173,7 +173,7 @@ class SourcePackageBuilder(object):
 
             return package, version
 
-        except StandardError, e:
+        except Exception, e:
             raise SourcePackagePreparationError(e)
 
         finally:
