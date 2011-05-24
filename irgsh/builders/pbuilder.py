@@ -69,18 +69,6 @@ class Pbuilder(BaseBuilder):
                                for key, value in config.items()]))
             f.close()
 
-    def reinit(self):
-        self.log.debug('Resetting pbuilder')
-
-        fname = os.path.join(self.path, 'distribution.json')
-        if os.path.exists(fname):
-            os.unlink(fname)
-
-        if os.path.exists(self.configfile):
-            os.unlink(self.configfile)
-
-        self.init()
-
     def create(self, logger=None):
         self.log.debug('Creating base.tgz')
 
