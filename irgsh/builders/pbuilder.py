@@ -33,46 +33,43 @@ class Pbuilder(BaseBuilder):
 
         # Create distribution configuration
         fname = os.path.join(self.path, 'distribution.json')
-        if not os.path.exists(fname):
-            f = open(fname, 'w')
-            f.write(json.dumps({'name': self.distribution.name,
-                                'mirror': self.distribution.mirror,
-                                'dist': self.distribution.dist,
-                                'components': self.distribution.components,
-                                'extra': self.distribution.extra}))
-            f.close()
+        f = open(fname, 'w')
+        f.write(json.dumps({'name': self.distribution.name,
+                            'mirror': self.distribution.mirror,
+                            'dist': self.distribution.dist,
+                            'components': self.distribution.components,
+                            'extra': self.distribution.extra}))
+        f.close()
 
         # Create pbuilder configuration
-        if not os.path.exists(self.configfile):
-            def join(*name):
-                return os.path.join(self.path, *name)
-            def escape(value):
-                if ' ' in value:
-                    return '"%s"' % value
-                return value
+        def join(*name):
+            return os.path.join(self.path, *name)
+        def escape(value):
+            if ' ' in value:
+                return '"%s"' % value
+            return value
 
-            components = ' '.join(self.distribution.components)
-            othermirror = ' | '.join(self.distribution.extra)
+        components = ' '.join(self.distribution.components)
+        othermirror = ' | '.join(self.distribution.extra)
 
-            config = {'BASETGZ': join('base.tgz'),
-                      'APTCACHE': join('aptcache'),
-                      'BUILDRESULT': join('result'),
-                      'BUILDPLACE': join('build'),
-                      'HOOKDIR': join('hook'),
-                      'MIRRORSITE': self.distribution.mirror,
-                      'DISTRIBUTION': self.distribution.dist,
-                      'COMPONENTS': components,
-                      'OTHERMIRROR': othermirror}
+        config = {'BASETGZ': join('base.tgz'),
+                  'APTCACHE': join('aptcache'),
+                  'BUILDRESULT': join('result'),
+                  'BUILDPLACE': join('build'),
+                  'HOOKDIR': join('hook'),
+                  'MIRRORSITE': self.distribution.mirror,
+                  'DISTRIBUTION': self.distribution.dist,
+                  'COMPONENTS': components,
+                  'OTHERMIRROR': othermirror}
 
-            f = open(self.configfile, 'w')
-            f.write('\n'.join(['%s=%s' % (key, escape(value))
-                               for key, value in config.items()]))
-            f.close()
+        f = open(self.configfile, 'w')
+        f.write('\n'.join(['%s=%s' % (key, escape(value))
+                           for key, value in config.items()]))
+        f.close()
 
     def create(self, logger=None):
         self.log.debug('Creating base.tgz')
 
-        # TODO: check if pbuilder.conf exists
         cmd = ['sudo', 'pbuilder', '--create',
                '--configfile', self.configfile,
                '--debootstrapopts', '--keyring=%s' % self.keyring]
@@ -86,7 +83,6 @@ class Pbuilder(BaseBuilder):
     def update(self, logger=None):
         self.log.debug('Updating base.tgz')
 
-        # TODO: check if pbuilder.conf exists
         cmd = ['sudo', 'pbuilder', '--update', '--override-config',
                '--configfile', self.configfile,
                '--debootstrapopts', '--keyring=%s' % self.keyring]
@@ -100,9 +96,10 @@ class Pbuilder(BaseBuilder):
     def build(self, dsc, resultdir, logger=None):
         self.log.debug('Building %s to %s' % (dsc, resultdir))
 
-        # Check if base.tgz exists, if not initialize the builder
+        self.init()
+
+        # Create base.tgz if it does not exist
         if not os.path.exists(os.path.join(self.path, 'base.tgz')):
-            self.init()
             self.create(logger)
 
         else:
@@ -114,7 +111,6 @@ class Pbuilder(BaseBuilder):
             # - the lock contains pid so the its validity
             #   can be checked
 
-        # TODO: check if pbuilder.conf exists
         cmd = ['sudo', 'pbuilder', '--build',
                '--configfile', self.configfile,
                '--buildresult', resultdir,
