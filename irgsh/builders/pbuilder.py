@@ -96,6 +96,12 @@ class Pbuilder(BaseBuilder):
     def build(self, dsc, resultdir, logger=None):
         self.log.debug('Building %s to %s' % (dsc, resultdir))
 
+        # TODO
+        # - add file locking so other process won't try to
+        #   initialize the builder again
+        # - the lock contains pid so the its validity
+        #   can be checked
+
         self.init()
 
         # Create base.tgz if it does not exist
@@ -104,12 +110,6 @@ class Pbuilder(BaseBuilder):
 
         else:
             self.update(logger)
-
-            # TODO
-            # - add file locking so other process won't try to
-            #   initialize the builder again
-            # - the lock contains pid so the its validity
-            #   can be checked
 
         cmd = ['sudo', 'pbuilder', '--build',
                '--configfile', self.configfile,
