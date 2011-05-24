@@ -87,7 +87,7 @@ class Pbuilder(BaseBuilder):
         self.log.debug('Updating base.tgz')
 
         # TODO: check if pbuilder.conf exists
-        cmd = ['sudo', 'pbuilder', '--update',
+        cmd = ['sudo', 'pbuilder', '--update', '--override-config',
                '--configfile', self.configfile,
                '--debootstrapopts', '--keyring=%s' % self.keyring]
 
