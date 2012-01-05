@@ -17,6 +17,11 @@ from .error import SourcePackageBuildError, SourcePackagePreparationError
 
 re_extra_orig = re.compile(r'.+\.orig-([a-z0-9-]+)\.tar')
 
+def extract_tarball(fname, target):
+    tar = tarfile.open(fname)
+    tar.extractall(target)
+    tar.close()
+
 class SourcePackageBuilder(object):
     def __init__(self, source, source_type='tarball',
                  source_opts=None, orig=None, extra_orig=None):
@@ -221,9 +226,7 @@ class SourcePackageBuilder(object):
             source_path = os.path.join(tmp, source_name)
             shutil.move(tmpname, source_path)
 
-            tar = tarfile.open(source_path)
-            tar.extractall(target)
-            tar.close()
+            extract_tarball(source_path, target)
 
             return target
         except tarfile.ReadError, e:
@@ -245,9 +248,7 @@ class SourcePackageBuilder(object):
         self.log.debug('Extracting orig file')
         self.slog(logger, '# Extracting', os.path.basename(orig))
 
-        tar = tarfile.open(orig)
-        tar.extractall(target)
-        tar.close()
+        extract_tarball(orig, target)
 
         return self.find_orig_path(target)
 
@@ -266,9 +267,7 @@ class SourcePackageBuilder(object):
 
                 self.slog(logger, '# Extracting', os.path.basename(orig))
 
-                tar = tarfile.open(orig)
-                tar.extractall(extra)
-                tar.close()
+                extract_tarball(orig, extra)
 
                 subdir = os.path.join(extra, component)
                 if os.path.exists(subdir) and os.path.isdir(subdir):
