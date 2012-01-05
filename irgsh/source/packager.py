@@ -7,6 +7,7 @@ import logging
 import re
 from subprocess import Popen, PIPE, STDOUT
 
+import lzma
 try:
     from debian.deb822 import Sources
 except ImportError:
@@ -18,9 +19,25 @@ from .error import SourcePackageBuildError, SourcePackagePreparationError
 re_extra_orig = re.compile(r'.+\.orig-([a-z0-9-]+)\.tar')
 
 def extract_tarball(fname, target):
-    tar = tarfile.open(fname)
-    tar.extractall(target)
-    tar.close()
+    tmp = None
+    try:
+        if fname.endswith('.tar.xz'):
+            __, tmp = tempfile.mkstemp('-irgsh-xz.tar')
+
+            d = lzma.LZMADecompressor()
+            fin = open(fname, 'rb')
+            fout = open(tmp, 'wb')
+            fout.write(d.decompress(fin.read()))
+            fout.close()
+
+            fname = tmp
+
+        tar = tarfile.open(fname)
+        tar.extractall(target)
+        tar.close()
+    finally:
+        if tmp is not None:
+            os.unlink(tmp)
 
 class SourcePackageBuilder(object):
     def __init__(self, source, source_type='tarball',
