@@ -16,6 +16,7 @@ class Pbuilder(BaseBuilder):
         self.path = os.path.join(self.pbuilder_path, self.distribution.name)
         self.configfile = os.path.join(self.path, 'pbuilder.conf')
         self.keyring = opts['keyring']
+        self.debootstrap = opts.get('debootstrap', None)
 
         self.log = logging.getLogger('irgsh.builders.pbuilder')
 
@@ -74,6 +75,9 @@ class Pbuilder(BaseBuilder):
                '--configfile', self.configfile,
                '--debootstrapopts', '--keyring=%s' % self.keyring]
 
+        if self.debootstrap is not None:
+            cmd += ['--debootstrap', self.debootstrap]
+
         p = Popen(cmd, stdout=logger, stderr=STDOUT,
                   preexec_fn=os.setsid)
         p.communicate()
@@ -86,6 +90,9 @@ class Pbuilder(BaseBuilder):
         cmd = ['sudo', 'pbuilder', '--update', '--override-config',
                '--configfile', self.configfile,
                '--debootstrapopts', '--keyring=%s' % self.keyring]
+
+        if self.debootstrap is not None:
+            cmd += ['--debootstrap', self.debootstrap]
 
         p = Popen(cmd, stdout=logger, stderr=STDOUT,
                   preexec_fn=os.setsid)
@@ -114,8 +121,12 @@ class Pbuilder(BaseBuilder):
         cmd = ['sudo', 'pbuilder', '--build',
                '--configfile', self.configfile,
                '--buildresult', resultdir,
-               '--debootstrapopts', '--keyring=%s' % self.keyring,
-               dsc]
+               '--debootstrapopts', '--keyring=%s' % self.keyring]
+
+        if self.debootstrap is not None:
+            cmd += ['--debootstrap', self.debootstrap]
+
+        cmd += [dsc]
 
         p = Popen(cmd, stdout=logger, stderr=STDOUT,
                   preexec_fn=os.setsid)
