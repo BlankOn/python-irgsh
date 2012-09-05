@@ -17,6 +17,8 @@ class Pbuilder(BaseBuilder):
         self.configfile = os.path.join(self.path, 'pbuilder.conf')
         self.keyring = opts['keyring']
         self.debootstrap = opts.get('debootstrap', None)
+        self.mirror = opts.get('mirror', None)
+        self.arch = opts.get('arch', None)
 
         self.log = logging.getLogger('irgsh.builders.pbuilder')
 
@@ -68,15 +70,23 @@ class Pbuilder(BaseBuilder):
                            for key, value in config.items()]))
         f.close()
 
+    def get_extra_pbuilder_cmd(self):
+        cmd = []
+        if self.debootstrap is not None:
+            cmd += ['--debootstrap', self.debootstrap]
+        if self.mirror is not None:
+            cmd += ['--mirror', self.mirror]
+        if self.arch is not None:
+            cmd += ['--architecture', self.arch]
+        return cmd
+
     def create(self, logger=None):
         self.log.debug('Creating base.tgz')
 
         cmd = ['sudo', 'pbuilder', '--create',
                '--configfile', self.configfile,
                '--debootstrapopts', '--keyring=%s' % self.keyring]
-
-        if self.debootstrap is not None:
-            cmd += ['--debootstrap', self.debootstrap]
+        cmd += self.get_extra_pbuilder_cmd()
 
         p = Popen(cmd, stdout=logger, stderr=STDOUT,
                   preexec_fn=os.setsid)
@@ -90,9 +100,7 @@ class Pbuilder(BaseBuilder):
         cmd = ['sudo', 'pbuilder', '--update', '--override-config',
                '--configfile', self.configfile,
                '--debootstrapopts', '--keyring=%s' % self.keyring]
-
-        if self.debootstrap is not None:
-            cmd += ['--debootstrap', self.debootstrap]
+        cmd += self.get_extra_pbuilder_cmd()
 
         p = Popen(cmd, stdout=logger, stderr=STDOUT,
                   preexec_fn=os.setsid)
@@ -122,10 +130,7 @@ class Pbuilder(BaseBuilder):
                '--configfile', self.configfile,
                '--buildresult', resultdir,
                '--debootstrapopts', '--keyring=%s' % self.keyring]
-
-        if self.debootstrap is not None:
-            cmd += ['--debootstrap', self.debootstrap]
-
+        cmd += self.get_extra_pbuilder_cmd()
         cmd += [dsc]
 
         p = Popen(cmd, stdout=logger, stderr=STDOUT,
