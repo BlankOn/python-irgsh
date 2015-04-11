@@ -129,7 +129,7 @@ class Pbuilder(BaseBuilder):
         cmd = ['sudo', 'pbuilder', '--build',
                '--configfile', self.configfile,
                '--buildresult', resultdir,
-               '--debootstrapopts', '--keyring=%s' % self.keyring]
+               '--debootstrapopts', '--debbuildopts -I -i -j9']
         cmd += self.get_extra_pbuilder_cmd()
         cmd += [dsc]
 
