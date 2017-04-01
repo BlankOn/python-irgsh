@@ -15,6 +15,6 @@ setup(name='python-irgsh',
       packages=packages,
       maintainer='BlankOn Developers',
       maintainer_email='blankon-dev@googlegroups.com',
-      install_requires=['setuptools', 'python-debian', 'simplejson', 'pyliblzma'],
+      install_requires=['setuptools', 'python-debian'],
      )
 

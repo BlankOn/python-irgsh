@@ -7,7 +7,6 @@ import logging
 import re
 from subprocess import Popen, PIPE, STDOUT
 
-import lzma
 try:
     from debian.deb822 import Sources
 except ImportError:
@@ -17,27 +16,6 @@ from irgsh.utils import find_debian, get_package_version, retrieve
 from .error import SourcePackageBuildError, SourcePackagePreparationError
 
 re_extra_orig = re.compile(r'.+\.orig-([a-z0-9-]+)\.tar')
-
-def extract_tarball(fname, target):
-    tmp = None
-    try:
-        if fname.endswith('.tar.xz'):
-            __, tmp = tempfile.mkstemp('-irgsh-xz.tar')
-
-            d = lzma.LZMADecompressor()
-            fin = open(fname, 'rb')
-            fout = open(tmp, 'wb')
-            fout.write(d.decompress(fin.read()))
-            fout.close()
-
-            fname = tmp
-
-        tar = tarfile.open(fname)
-        tar.extractall(target)
-        tar.close()
-    finally:
-        if tmp is not None:
-            os.unlink(tmp)
 
 class SourcePackageBuilder(object):
     def __init__(self, source, source_type='tarball',
@@ -75,21 +53,13 @@ class SourcePackageBuilder(object):
             source = '%s-%s' % (package, version)
             self.slog(logger)
 
-            os.chdir(build_path)
-
-            self.slog(logger, '# File listing')
-            cmd = 'find -ls'
-            p = Popen(cmd.split(), stdout=logger, stderr=STDOUT,
-                      preexec_fn=os.setsid)
-            out, err = p.communicate()
-            self.slog(logger)
-
             # Build
             self.log.debug('Building source package: ' \
                            'source=%s type=%s opts=%s orig=%s extra_orig=%s' % \
                            (self.source, self.source_type, \
                             self.source_opts, self.orig, self.extra_orig))
 
+            os.chdir(build_path)
             self.slog(logger, '# Building source package')
             cmd = 'dpkg-source -b %s' % source
             self.slog(logger, '# Command:', cmd)
@@ -184,9 +154,8 @@ class SourcePackageBuilder(object):
             # Move and rename orig file, if available
             if orig is not None:
                 upstream = version.split('-')[0]
-                fname, ext = os.path.splitext(self.orig)
-                orig_path = os.path.join(target, '%s_%s.orig.tar%s' % \
-                                                 (package, upstream, ext))
+                orig_path = os.path.join(target, '%s_%s.orig.tar.gz' % \
+                                                  (package, upstream))
                 shutil.move(orig, orig_path)
 
             # Move additional orig files
@@ -195,7 +164,7 @@ class SourcePackageBuilder(object):
 
             return package, version
 
-        except Exception, e:
+        except StandardError, e:
             raise SourcePackagePreparationError(e)
 
         finally:
@@ -243,7 +212,9 @@ class SourcePackageBuilder(object):
             source_path = os.path.join(tmp, source_name)
             shutil.move(tmpname, source_path)
 
-            extract_tarball(source_path, target)
+            tar = tarfile.open(source_path)
+            tar.extractall(target)
+            tar.close()
 
             return target
         except tarfile.ReadError, e:
@@ -265,7 +236,9 @@ class SourcePackageBuilder(object):
         self.log.debug('Extracting orig file')
         self.slog(logger, '# Extracting', os.path.basename(orig))
 
-        extract_tarball(orig, target)
+        tar = tarfile.open(orig)
+        tar.extractall(target)
+        tar.close()
 
         return self.find_orig_path(target)
 
@@ -284,7 +257,9 @@ class SourcePackageBuilder(object):
 
                 self.slog(logger, '# Extracting', os.path.basename(orig))
 
-                extract_tarball(orig, extra)
+                tar = tarfile.open(orig)
+                tar.extractall(extra)
+                tar.close()
 
                 subdir = os.path.join(extra, component)
                 if os.path.exists(subdir) and os.path.isdir(subdir):

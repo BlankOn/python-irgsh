@@ -15,10 +15,6 @@ class Pbuilder(BaseBuilder):
         self.pbuilder_path = os.path.abspath(pbuilder_path)
         self.path = os.path.join(self.pbuilder_path, self.distribution.name)
         self.configfile = os.path.join(self.path, 'pbuilder.conf')
-        self.keyring = opts['keyring']
-        self.debootstrap = opts.get('debootstrap', None)
-        self.mirror = opts.get('mirror', None)
-        self.arch = opts.get('arch', None)
 
         self.log = logging.getLogger('irgsh.builders.pbuilder')
 
@@ -36,59 +32,61 @@ class Pbuilder(BaseBuilder):
 
         # Create distribution configuration
         fname = os.path.join(self.path, 'distribution.json')
-        f = open(fname, 'w')
-        f.write(json.dumps({'name': self.distribution.name,
-                            'mirror': self.distribution.mirror,
-                            'dist': self.distribution.dist,
-                            'components': self.distribution.components,
-                            'extra': self.distribution.extra}))
-        f.close()
+        if not os.path.exists(fname):
+            f = open(fname, 'w')
+            f.write(json.dumps({'name': self.distribution.name,
+                                'mirror': self.distribution.mirror,
+                                'dist': self.distribution.dist,
+                                'components': self.distribution.components,
+                                'extra': self.distribution.extra}))
+            f.close()
 
         # Create pbuilder configuration
-        def join(*name):
-            return os.path.join(self.path, *name)
-        def escape(value):
-            if ' ' in value:
-                return '"%s"' % value
-            return value
+        if not os.path.exists(self.configfile):
+            def join(*name):
+                return os.path.join(self.path, *name)
+            def escape(value):
+                if ' ' in value:
+                    return '"%s"' % value
+                return value
 
-        components = ' '.join(self.distribution.components)
-        othermirror = ' | '.join(self.distribution.extra)
+            components = ' '.join(self.distribution.components)
+            othermirror = ' | '.join(self.distribution.extra)
 
-        config = {'BASETGZ': join('base.tgz'),
-                  'APTCACHE': join('aptcache'),
-                  'BUILDRESULT': join('result'),
-                  'BUILDPLACE': join('build'),
-                  'HOOKDIR': join('hook'),
-                  'MIRRORSITE': self.distribution.mirror,
-                  'DISTRIBUTION': self.distribution.dist,
-                  'COMPONENTS': components,
-                  'OTHERMIRROR': othermirror}
+            config = {'BASETGZ': join('base.tgz'),
+                      'APTCACHE': join('aptcache'),
+                      'BUILDRESULT': join('result'),
+                      'BUILDPLACE': join('build'),
+                      'HOOKDIR': join('hook'),
+                      'MIRRORSITE': self.distribution.mirror,
+                      'DISTRIBUTION': self.distribution.dist,
+                      'COMPONENTS': components,
+                      'OTHERMIRROR': othermirror}
 
-        f = open(self.configfile, 'w')
-        f.write('\n'.join(['%s=%s' % (key, escape(value))
-                           for key, value in config.items()]))
-        f.close()
+            f = open(self.configfile, 'w')
+            f.write('\n'.join(['%s=%s' % (key, escape(value))
+                               for key, value in config.items()]))
+            f.close()
 
-    def get_extra_pbuilder_cmd(self):
-        cmd = []
-        if self.debootstrap is not None:
-            cmd += ['--debootstrap', self.debootstrap]
-        if self.mirror is not None:
-            cmd += ['--mirror', self.mirror]
-        if self.arch is not None:
-            cmd += ['--architecture', self.arch]
-        return cmd
+    def reinit(self):
+        self.log.debug('Resetting pbuilder')
+
+        fname = os.path.join(self.path, 'distribution.json')
+        if os.path.exists(fname):
+            os.unlink(fname)
+
+        if os.path.exists(self.configfile):
+            os.unlink(self.configfile)
+
+        self.init()
 
     def create(self, logger=None):
         self.log.debug('Creating base.tgz')
 
-        cmd = ['sudo', 'pbuilder', '--create',
-               '--configfile', self.configfile,
-               '--debootstrapopts', '--keyring=%s' % self.keyring]
-        cmd += self.get_extra_pbuilder_cmd()
+        # TODO: check if pbuilder.conf exists
+        cmd = 'sudo pbuilder --create --configfile %s' % self.configfile
 
-        p = Popen(cmd, stdout=logger, stderr=STDOUT,
+        p = Popen(cmd.split(), stdout=logger, stderr=STDOUT,
                   preexec_fn=os.setsid)
         p.communicate()
 
@@ -97,12 +95,10 @@ class Pbuilder(BaseBuilder):
     def update(self, logger=None):
         self.log.debug('Updating base.tgz')
 
-        cmd = ['sudo', 'pbuilder', '--update', '--override-config',
-               '--configfile', self.configfile,
-               '--debootstrapopts', '--keyring=%s' % self.keyring]
-        cmd += self.get_extra_pbuilder_cmd()
+        # TODO: check if pbuilder.conf exists
+        cmd = 'sudo pbuilder --update --configfile %s' % self.configfile
 
-        p = Popen(cmd, stdout=logger, stderr=STDOUT,
+        p = Popen(cmd.split(), stdout=logger, stderr=STDOUT,
                   preexec_fn=os.setsid)
         p.communicate()
 
@@ -111,29 +107,29 @@ class Pbuilder(BaseBuilder):
     def build(self, dsc, resultdir, logger=None):
         self.log.debug('Building %s to %s' % (dsc, resultdir))
 
-        # TODO
-        # - add file locking so other process won't try to
-        #   initialize the builder again
-        # - the lock contains pid so the its validity
-        #   can be checked
-
-        self.init()
-
-        # Create base.tgz if it does not exist
+        # Check if base.tgz exists, if not initialize the builder
         if not os.path.exists(os.path.join(self.path, 'base.tgz')):
+            self.init()
             self.create(logger)
 
         else:
             self.update(logger)
 
-        cmd = ['sudo', 'pbuilder', '--build',
-               '--configfile', self.configfile,
-               '--buildresult', resultdir,
-               '--debootstrapopts', '--debbuildopts -I -i -j9']
-        cmd += self.get_extra_pbuilder_cmd()
-        cmd += [dsc]
+            # TODO
+            # - add file locking so other process won't try to
+            #   initialize the builder again
+            # - the lock contains pid so the its validity
+            #   can be checked
 
-        p = Popen(cmd, stdout=logger, stderr=STDOUT,
+        # TODO: check if pbuilder.conf exists
+        cmds = []
+        cmds.append('sudo pbuilder --build')
+        cmds.append('--configfile %s' % self.configfile)
+        cmds.append('--buildresult %s' % resultdir)
+        cmds.append(dsc)
+
+        cmd = ' '.join(cmds)
+        p = Popen(cmd.split(), stdout=logger, stderr=STDOUT,
                   preexec_fn=os.setsid)
         p.communicate()
 
