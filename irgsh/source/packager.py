@@ -252,13 +252,20 @@ class SourcePackageBuilder(object):
         finally:
             shutil.rmtree(tmp)
 
-    def download_source_bzr(self, target, logger=None):
+    def download_source_bzr_(self, target, logger=None):
         self.slog(logger, '# Downloading bazaar tree:', self.source, self.source_opts)
 
         from .bazaar import BazaarExporter
         bzr = BazaarExporter(self.source, **self.source_opts)
         bzr.export(target)
 
+        return target
+
+    def download_source_bzr(self, target, logger=None):
+        self.slog(logger, '# Downloading git tree:', self.source, self.source_opts)
+
+        from git import Repo
+        Repo.clone_from(self.source, target);
         return target
 
     def extract_orig(self, orig, target, logger=None):
