@@ -52,7 +52,7 @@ class SourcePackageBuilder(object):
             extra_orig = []
         self.extra_orig = extra_orig
 
-        if not source_type in ['patch', 'tarball', 'bzr']:
+        if not source_type in ['patch', 'tarball', 'bzr', 'git']:
             raise ValueError, 'Unsupported source type: %s' % source_type
         if source_type == 'patch' and orig is None:
             raise ValueError, \
@@ -252,7 +252,7 @@ class SourcePackageBuilder(object):
         finally:
             shutil.rmtree(tmp)
 
-    def download_source_bzr_(self, target, logger=None):
+    def download_source_bzr(self, target, logger=None):
         self.slog(logger, '# Downloading bazaar tree:', self.source, self.source_opts)
 
         from .bazaar import BazaarExporter
@@ -261,7 +261,7 @@ class SourcePackageBuilder(object):
 
         return target
 
-    def download_source_bzr(self, target, logger=None):
+    def download_source_git(self, target, logger=None):
         self.slog(logger, '# Downloading git tree:', self.source, self.source_opts)
 
         from git import Repo
@@ -364,6 +364,9 @@ class SourcePackageBuilder(object):
         return find_debian(orig_path)
 
     def combine_bzr(self, source, orig, extra_orig, target, logger=None):
+        return self.combine_tarball(source, orig, extra_orig, target, logger)
+
+    def combine_git(self, source, orig, extra_orig, target, logger=None):
         return self.combine_tarball(source, orig, extra_orig, target, logger)
 
     def find_orig_path(self, dirname):
